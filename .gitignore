@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Claude Code
+.claude/*
+!.claude/hooks/
+!.claude/skills/
+
+# Package tarballs
+*.tgz
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*

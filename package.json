@@ -1,0 +1,43 @@
+{
+	"name": "@sakasegawa/notion-cli",
+	"version": "0.1.0",
+	"description": "CLI wrapper for Remote Notion MCP",
+	"type": "module",
+	"bin": {
+		"notion": "dist/index.js"
+	},
+	"scripts": {
+		"build": "tsup src/index.ts --format esm --dts --clean",
+		"dev": "tsup src/index.ts --format esm --watch",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"lint": "biome check .",
+		"lint:fix": "biome check --fix .",
+		"typecheck": "tsc --noEmit"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nyosegawa/notion-cli.git"
+	},
+	"files": [
+		"dist"
+	],
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.27.1",
+		"commander": "^14.0.3",
+		"env-paths": "^4.0.0",
+		"open": "^11.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.7",
+		"@types/node": "^25.5.0",
+		"lefthook": "^2.1.4",
+		"tsup": "^8.5.1",
+		"typescript": "^5.9.3",
+		"vitest": "^4.1.0"
+	}
+}
