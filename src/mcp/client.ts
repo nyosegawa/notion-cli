@@ -127,7 +127,7 @@ const HINT_RULES: HintRule[] = [
 	{
 		pattern: /could not find page with id/i,
 		tool: "notion-create-pages",
-		hint: 'If adding to a database, use --data with "parent":{"data_source_id":"<ds-id>","type":"data_source_id"}. Run "notion fetch <db-id>" to get the data_source_id (collection://...)',
+		hint: 'If adding to a database, use --parent collection://<ds-id>. For --data, use "parent":{"data_source_id":"<uuid>","type":"data_source_id"}. Run "notion fetch <db-id>" to get the data_source_id',
 	},
 	{
 		pattern: /invalid database view url/i,
@@ -135,7 +135,7 @@ const HINT_RULES: HintRule[] = [
 	},
 	{
 		pattern: /data_source_id[\s\S]*?required/i,
-		hint: 'data_source_id is required. Run "notion fetch <db-id>" to find it (look for collection://... in the response)',
+		hint: "data_source_id is required. Use --parent collection://<ds-id> or, with --data, pass the bare UUID from the fetched collection://... value",
 	},
 	{
 		pattern: /rich_text[\s\S]*?required/i,

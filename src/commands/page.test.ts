@@ -10,9 +10,9 @@ import {
 } from "./page.js";
 
 describe("parseParentRef", () => {
-	it("detects collection:// as data_source_id", () => {
+	it("detects collection:// as data_source_id and strips the prefix", () => {
 		expect(parseParentRef("collection://abc-123")).toEqual({
-			data_source_id: "collection://abc-123",
+			data_source_id: "abc-123",
 			type: "data_source_id",
 		});
 	});
@@ -42,7 +42,7 @@ describe("buildPageCreateCall", () => {
 	it("maps --parent collection:// to data_source_id parent", () => {
 		const result = buildPageCreateCall({ parent: "collection://ds-id" });
 		expect(result.args.parent).toEqual({
-			data_source_id: "collection://ds-id",
+			data_source_id: "ds-id",
 			type: "data_source_id",
 		});
 	});

@@ -13,9 +13,13 @@ interface PageWriteOptions {
 	data?: string;
 }
 
+function stripDataSourcePrefix(id: string): string {
+	return id.replace(/^collection:\/\//, "");
+}
+
 export function parseParentRef(id: string): Record<string, string> {
 	if (id.startsWith("collection://")) {
-		return { data_source_id: id, type: "data_source_id" };
+		return { data_source_id: stripDataSourcePrefix(id), type: "data_source_id" };
 	}
 	if (id === "workspace") {
 		return { type: "workspace" };

@@ -71,11 +71,11 @@ MCP: { id: "abc123" }
 CLI: notion page create --title "Bug" --parent collection://ds-id --prop "Status=Open" --body "# Content"
 MCP: {
   pages: [{ properties: { title: "Bug", Status: "Open" }, content: "# Content" }],
-  parent: { data_source_id: "collection://ds-id", type: "data_source_id" }
+  parent: { data_source_id: "ds-id", type: "data_source_id" }
 }
 
 # parent は ID のプレフィックスで自動判別 (create では workspace 不可):
-#   collection://xxx → { data_source_id: "collection://xxx", type: "data_source_id" }
+#   collection://xxx → { data_source_id: "xxx", type: "data_source_id" }
 #   その他           → { page_id: "xxx", type: "page_id" }
 ```
 
