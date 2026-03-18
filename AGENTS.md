@@ -13,6 +13,7 @@ npm run build && npm run typecheck && npm run lint && npm test
 - `docs/` — 設計 (architecture, commands, auth, design-decisions, agent-first-design)
 - `docs/agent-first-design.md` — Agent-first CLI 設計思想 (出力・ディスカバリ・エラーの設計原則)
 - `research/` — 調査結果 (事実のみ)
+- `skills/` — Agent Skills (`skills/notion/` — notion-cli 活用スキル)
 - `PHASE.md` — フェーズ計画 (チェックボックスで進捗追跡)
 
 ## Phase Workflow
