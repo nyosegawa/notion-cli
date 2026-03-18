@@ -144,18 +144,24 @@ search, fetch, page CRUD を実装。
 
 ---
 
-## PHASE-5: Polish & Release
+## PHASE-5: Polish & Release ✅
 
 README、npm publish 準備。
 
 **成果物:**
-- [ ] `README.md` — インストール、使い方、全コマンド一覧
-- [ ] `LICENSE` (MIT, 2026 Sakasegawa)
-- [ ] `.npmignore` / `package.json files` 設定
-- [ ] npm publish 準備
+- [x] `README.md` — インストール、使い方、全コマンド一覧
+- [x] `LICENSE` (MIT, 2026 Sakasegawa)
+- [x] `.npmignore` / `package.json files` 設定 — `"files": ["dist"]` で十分、`.npmignore` 不要
+- [x] npm publish 準備 — `prepublishOnly` スクリプト追加、keywords/author/homepage 追加
 
 **検証:**
-- [ ] `npm run typecheck` → エラーなし
-- [ ] `npm run lint` → パス
-- [ ] `npm test` → 全テストパス
-- [ ] `npm pack` → ローカルインストール → 全コマンド動作確認
+- [x] `npm run typecheck` → エラーなし
+- [x] `npm run lint` → パス
+- [x] `npm test` → 全テストパス (17ファイル, 133テスト)
+- [x] `npm pack` → ローカルインストール → 全コマンド動作確認 (5ファイル, 11.9kB)
+
+**備考:**
+- `.npmignore` は不要。`"files": ["dist"]` ホワイトリストで十分。npm は README.md, LICENSE を自動包含。
+- README は英語（public npm package 向け）。Agent-first 設計の説明、全コマンドテーブル、ワークフロー例を含む。
+- `prepublishOnly` で build + typecheck + lint + test を自動実行。
+- 実際の publish は `npm publish --access public` で手動実行。

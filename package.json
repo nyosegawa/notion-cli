@@ -13,16 +13,29 @@
 		"test:watch": "vitest",
 		"lint": "biome check .",
 		"lint:fix": "biome check --fix .",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"prepublishOnly": "npm run build && npm run typecheck && npm run lint && npm test"
 	},
 	"engines": {
 		"node": ">=18"
 	},
+	"author": "Sakasegawa",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/nyosegawa/notion-cli.git"
 	},
+	"homepage": "https://github.com/nyosegawa/notion-cli#readme",
+	"bugs": {
+		"url": "https://github.com/nyosegawa/notion-cli/issues"
+	},
+	"keywords": [
+		"notion",
+		"cli",
+		"mcp",
+		"model-context-protocol",
+		"notion-api"
+	],
 	"files": [
 		"dist"
 	],
