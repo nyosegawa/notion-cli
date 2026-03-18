@@ -1,5 +1,11 @@
 # @sakasegawa/notion-cli
 
+[![npm version](https://img.shields.io/npm/v/@sakasegawa/notion-cli)](https://www.npmjs.com/package/@sakasegawa/notion-cli)
+[![license](https://img.shields.io/npm/l/@sakasegawa/notion-cli)](./LICENSE)
+[![node](https://img.shields.io/node/v/@sakasegawa/notion-cli)](https://nodejs.org/)
+
+**[日本語](./README.ja.md)**
+
 CLI wrapper for [Remote Notion MCP](https://mcp.notion.com/mcp) — read and write Notion from the terminal.
 
 Designed for both humans and coding agents (Claude Code, Codex, etc.). All output is structured JSON with recovery hints on errors.
