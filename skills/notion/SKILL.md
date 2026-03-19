@@ -60,6 +60,9 @@ See `references/id-patterns.md` for detailed extraction patterns.
 |---|---|
 | `ncli search "<query>"` | Search pages/databases |
 | `ncli fetch <url-or-id>` | Get page/database content |
+| `ncli beads status --database-id <db-id>` | Check beads DB wiring and schema readiness |
+| `ncli beads pull --view-url <view-url>` | Normalize a dedicated beads view into issue JSON |
+| `ncli beads push --database-id <db-id> --view-url <view-url> --input <path|->` | Create/update dedicated beads DB rows |
 
 ### Page Operations
 | Command | Description |
@@ -166,6 +169,34 @@ ncli db query "<view-url>" --json
 
 # Check comments
 ncli comment list <page-id> --json
+```
+
+### 4.5. Dedicated beads Sync
+
+`ncli beads` assumes a fixed Notion schema instead of arbitrary field mapping.
+
+Required properties:
+- `Name`
+- `Beads ID`
+- `Status`
+- `Priority`
+- `Type`
+- `Description`
+
+Optional properties:
+- `Assignee`
+- `Labels`
+
+```bash
+# 1. Verify the database and view
+ncli beads status --database-id <db-id> --view-url "view://<view-id>" --json
+
+# 2. Pull normalized issues
+ncli beads pull --view-url "view://<view-id>" --json
+
+# 3. Push issue JSON (match by "Beads ID")
+echo '{"issues":[{"id":"bd-1","title":"Fix login","status":"open"}]}' | \
+  ncli beads push --database-id <db-id> --view-url "view://<view-id>" --input -
 ```
 
 ### 5. Organize Content

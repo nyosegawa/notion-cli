@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { registerApiCommand } from "./commands/api.js";
+import { registerBeadsCommands } from "./commands/beads.js";
 import { registerCommentCommands } from "./commands/comment.js";
 import { registerDbCommands } from "./commands/db.js";
 import { registerFetchCommands } from "./commands/fetch.js";
@@ -56,5 +57,6 @@ registerUserCommands(program);
 registerTeamCommands(program);
 registerMeetingNotesCommands(program);
 registerApiCommand(program);
+registerBeadsCommands(program);
 
 export { program };

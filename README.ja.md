@@ -15,6 +15,7 @@
 ## 特徴
 
 - Notion ワークスペースへのフルアクセス: 検索、ページ、データベース、ビュー、コメント、ユーザー、チーム、ミーティングノート
+- 固定 schema の beads 用 DB を同期する `ncli beads` ワークフロー
 - OAuth 2.0 + PKCE 認証（ブラウザベース、設定不要）
 - Agent-first 設計: `--json` 出力、構造化エラーヒント（What + Why + Hint）
 - エスケープハッチ: `ncli api <tool> [json]` で MCP ツールを直接呼び出し
@@ -45,6 +46,11 @@ ncli db create --title "タスク管理" --parent <page-id> \
   --prop "Name:title" --prop "Status:select=Open,Done"
 ncli page create --parent collection://<ds-id> \
   --title "タスク1" --prop "Status=Open"
+
+# Beads ワークフロー
+ncli beads status --database-id <db-id> --view-url "view://<view-id>"
+ncli beads pull --view-url "view://<view-id>"
+ncli beads push --database-id <db-id> --view-url "view://<view-id>" --input issues.json
 ```
 
 ## コマンド一覧
@@ -56,6 +62,9 @@ ncli page create --parent collection://<ds-id> \
 | `ncli whoami` | 現在のユーザー情報を表示 |
 | `ncli search <query>` | ワークスペース内のページ・DB・ユーザーを検索 |
 | `ncli fetch <url-or-id>` | URL または ID でページ・DB・データソースを取得 |
+| `ncli beads status` | 認証、DB 接続、beads schema の準備状態を確認 |
+| `ncli beads pull` | 専用 Notion beads view を beads 向け issue JSON に正規化 |
+| `ncli beads push` | beads issue JSON から Notion 行を作成・更新 |
 | `ncli page create` | ページを作成（`--title`, `--parent`, `--prop`, `--body`） |
 | `ncli page update <id>` | ページのプロパティまたはコンテンツを更新 |
 | `ncli page move <id...> --to <parent>` | ページを別の親に移動 |
@@ -100,6 +109,38 @@ ncli page create --parent collection://<ds-id> \
 ncli view create --data '{"database_id":"<db-id>","data_source_id":"collection://<ds-id>","type":"table","name":"全件"}'
 ncli db query "https://www.notion.so/<db-id>?v=<view-id>"
 ```
+
+### 専用 Beads DB を同期する
+
+`ncli beads` は任意の Notion DB を汎用マッピングするのではなく、固定 schema の beads 用 DB を前提にします。
+
+必須プロパティ:
+
+- `Name`
+- `Beads ID`
+- `Status` (`Open`, `In Progress`, `Blocked`, `Deferred`, `Closed`)
+- `Priority` (`Critical`, `High`, `Medium`, `Low`, `Backlog`)
+- `Type` (`Bug`, `Feature`, `Task`, `Epic`, `Chore`)
+- `Description`
+
+任意プロパティ:
+
+- `Assignee`
+- `Labels`
+
+```bash
+# 接続と schema を確認
+ncli beads status --database-id <db-id> --view-url "view://<view-id>" --json
+
+# 正規化された issue JSON を pull
+ncli beads pull --view-url "view://<view-id>" --json
+
+# issue JSON を Notion に push ("Beads ID" でマッチ)
+echo '{"issues":[{"id":"bd-1","title":"Fix login","status":"open"}]}' | \
+  ncli beads push --database-id <db-id> --view-url "view://<view-id>" --input -
+```
+
+`push` は `Beads ID` をキーに冪等に create/update します。v1 では delete/archive や page body 同期は行いません。
 
 ### stdin からコンテンツをパイプ
 
