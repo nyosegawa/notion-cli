@@ -1,8 +1,8 @@
 # ncli
 
-[![npm version](https://img.shields.io/npm/v/ncli)](https://www.npmjs.com/package/ncli)
-[![license](https://img.shields.io/npm/l/ncli)](./LICENSE)
-[![node](https://img.shields.io/node/v/ncli)](https://nodejs.org/)
+[![npm version](https://img.shields.io/npm/v/@sakasegawa/ncli)](https://www.npmjs.com/package/@sakasegawa/ncli)
+[![license](https://img.shields.io/npm/l/@sakasegawa/ncli)](./LICENSE)
+[![node](https://img.shields.io/node/v/@sakasegawa/ncli)](https://nodejs.org/)
 
 > **Disclaimer:** ncli is an unofficial, community-built tool. It is not developed, endorsed, or supported by Notion Labs, Inc.
 
@@ -23,7 +23,7 @@ Designed for both humans and coding agents (Claude Code, Codex, etc.). All outpu
 ## Install
 
 ```bash
-npm install -g ncli
+npm install -g @sakasegawa/ncli
 ```
 
 ## Quick Start

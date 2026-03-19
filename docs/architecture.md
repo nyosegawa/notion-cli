@@ -63,7 +63,7 @@ Dev: `typescript`, `@types/node`, `tsup`, `vitest`, `@biomejs/biome`, `lefthook`
 
 ## パッケージ情報
 
-- npm: `ncli`
+- npm: `@sakasegawa/ncli`
 - bin: `ncli`
 - Node.js: >= 18 (native fetch, crypto.subtle, ESM)
 - Module: ESM (`"type": "module"`)

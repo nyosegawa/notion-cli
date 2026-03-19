@@ -1,8 +1,8 @@
 # ncli
 
-[![npm version](https://img.shields.io/npm/v/ncli)](https://www.npmjs.com/package/ncli)
-[![license](https://img.shields.io/npm/l/ncli)](./LICENSE)
-[![node](https://img.shields.io/node/v/ncli)](https://nodejs.org/)
+[![npm version](https://img.shields.io/npm/v/@sakasegawa/ncli)](https://www.npmjs.com/package/@sakasegawa/ncli)
+[![license](https://img.shields.io/npm/l/@sakasegawa/ncli)](./LICENSE)
+[![node](https://img.shields.io/node/v/@sakasegawa/ncli)](https://nodejs.org/)
 
 > **免責事項:** ncli は非公式のコミュニティ製ツールです。Notion Labs, Inc. による開発・推奨・サポートは受けていません。
 
@@ -23,7 +23,7 @@
 ## インストール
 
 ```bash
-npm install -g ncli
+npm install -g @sakasegawa/ncli
 ```
 
 ## クイックスタート
