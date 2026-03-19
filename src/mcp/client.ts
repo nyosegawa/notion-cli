@@ -23,7 +23,7 @@ export class MCPConnection {
 		const provider = new NotionOAuthProvider(tokenStore, callbackServer);
 		const serverUrl = new URL(MCP_SERVER_URL);
 
-		const client = new Client({ name: "notion-cli", version: "0.1.0" }, { capabilities: {} });
+		const client = new Client({ name: "ncli", version: "0.2.0" }, { capabilities: {} });
 		this.client = client;
 
 		let transport = new StreamableHTTPClientTransport(serverUrl, {
@@ -127,11 +127,11 @@ const HINT_RULES: HintRule[] = [
 	{
 		pattern: /could not find page with id/i,
 		tool: "notion-create-pages",
-		hint: 'If adding to a database, use --parent collection://<ds-id>. For --data, use "parent":{"data_source_id":"<uuid>","type":"data_source_id"}. Run "notion fetch <db-id>" to get the data_source_id',
+		hint: 'If adding to a database, use --parent collection://<ds-id>. For --data, use "parent":{"data_source_id":"<uuid>","type":"data_source_id"}. Run "ncli fetch <db-id>" to get the data_source_id',
 	},
 	{
 		pattern: /invalid database view url/i,
-		hint: 'Use a view URL with ?v= parameter. Run "notion fetch <db-id>" to find view URLs, or create one with "notion view create"',
+		hint: 'Use a view URL with ?v= parameter. Run "ncli fetch <db-id>" to find view URLs, or create one with "ncli view create"',
 	},
 	{
 		pattern: /data_source_id[\s\S]*?required/i,
@@ -143,16 +143,16 @@ const HINT_RULES: HintRule[] = [
 	},
 	{
 		pattern: /tool .* not found/i,
-		hint: 'Run "notion --help" to see available commands, or check the tool name for typos',
+		hint: 'Run "ncli --help" to see available commands, or check the tool name for typos',
 	},
 	// Generic hints
 	{
 		pattern: /unauthorized|not authorized/i,
-		hint: 'Run "notion login" to re-authenticate',
+		hint: 'Run "ncli login" to re-authenticate',
 	},
 	{
 		pattern: /could not find|does not exist/i,
-		hint: 'Check the ID or URL. Run "notion search" to find the correct resource',
+		hint: 'Check the ID or URL. Run "ncli search" to find the correct resource',
 	},
 	{
 		pattern: /rate limit|429/i,
@@ -160,7 +160,7 @@ const HINT_RULES: HintRule[] = [
 	},
 	{
 		pattern: /input validation error/i,
-		hint: 'Check required arguments. Use --data for full control, or run "notion <command> --help" for usage',
+		hint: 'Check required arguments. Use --data for full control, or run "ncli <command> --help" for usage',
 	},
 ];
 

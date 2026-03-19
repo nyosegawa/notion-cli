@@ -72,7 +72,7 @@ export function buildPageUpdateCall(
 		throw new CliError(
 			"Cannot use --body with --prop/--title in the same command",
 			"Property update and content replacement are separate MCP operations",
-			'Run two commands: "notion page update <id> --prop ..." then "notion page update <id> --body ..."',
+			'Run two commands: "ncli page update <id> --prop ..." then "ncli page update <id> --body ..."',
 		);
 	}
 
@@ -144,15 +144,15 @@ export function registerPageCommands(program: Command): void {
 			"after",
 			`
 Examples:
-  notion page create --title "Meeting Notes" --parent <page-id>
-  notion page create --parent collection://<ds-id> --title "Task" --prop "Status=Open"
-  echo "# Content" | notion page create --title "Doc" --body -
+  ncli page create --title "Meeting Notes" --parent <page-id>
+  ncli page create --parent collection://<ds-id> --title "Task" --prop "Status=Open"
+  echo "# Content" | ncli page create --title "Doc" --body -
 
 Parent types (auto-detected from prefix):
   <page-id>           → page parent
   collection://<id>   → data source parent (for DB pages)
 
-For DB pages: run "notion fetch <db-id>" first to get the data_source_id (collection://...) and schema.`,
+For DB pages: run "ncli fetch <db-id>" first to get the data_source_id (collection://...) and schema.`,
 		)
 		.action(async (opts: PageWriteOptions & { prop?: string[] }, cmd: Command) => {
 			opts.props = opts.prop;

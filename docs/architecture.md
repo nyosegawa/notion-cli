@@ -2,7 +2,7 @@
 
 ## 概要
 
-`@sakasegawa/notion-cli` は Remote Notion MCP (`https://mcp.notion.com/mcp`) のツールを CLI でラップする。
+`ncli` は Remote Notion MCP (`https://mcp.notion.com/mcp`) のツールを CLI でラップする。
 ツール数はプランにより変動する（個人プランで16ツール実測、Enterprise で追加ツールあり）。
 MCP SDK の Client + StreamableHTTPClientTransport を使い、OAuth 2.0 + PKCE で認証する。
 
@@ -14,15 +14,15 @@ src/
 ├── cli.ts                    # Commander セットアップ、グローバルフラグ (--json, --raw, --verbose, --no-color)
 ├── commands/
 │   ├── login.ts              # login / logout / whoami ✅
-│   ├── search.ts             # notion search ✅
-│   ├── fetch.ts              # notion fetch ✅
+│   ├── search.ts             # ncli search ✅
+│   ├── fetch.ts              # ncli fetch ✅
 │   ├── page.ts               # page {create,update,move,duplicate} ✅
 │   ├── db.ts                 # db {create,update,query} ✅
 │   ├── view.ts               # view {create,update} ✅
 │   ├── comment.ts            # comment {create,list} ✅
 │   ├── user.ts               # user list + team list ✅
 │   ├── meeting-notes.ts      # meeting-notes query ✅
-│   └── api.ts                # notion api <tool> [json] (escape hatch) ✅
+│   └── api.ts                # ncli api <tool> [json] (escape hatch) ✅
 ├── mcp/
 │   ├── client.ts             # MCPConnection: connect, callTool, listTools, disconnect + MCP エラー→CliError 変換 ✅
 │   └── with-connection.ts    # withConnection ヘルパー (connect/callTool/disconnect + retry) ✅
@@ -63,7 +63,7 @@ Dev: `typescript`, `@types/node`, `tsup`, `vitest`, `@biomejs/biome`, `lefthook`
 
 ## パッケージ情報
 
-- npm: `@sakasegawa/notion-cli`
-- bin: `notion`
+- npm: `ncli`
+- bin: `ncli`
 - Node.js: >= 18 (native fetch, crypto.subtle, ESM)
 - Module: ESM (`"type": "module"`)

@@ -19,7 +19,7 @@ export function buildApiCall(
 		throw new CliError(
 			"Invalid JSON argument",
 			"The provided JSON string could not be parsed",
-			`Check syntax: notion api ${toolName} '{"key": "value"}'`,
+			`Check syntax: ncli api ${toolName} '{"key": "value"}'`,
 		);
 	}
 
@@ -27,7 +27,7 @@ export function buildApiCall(
 		throw new CliError(
 			"Invalid argument type",
 			"Arguments must be a JSON object",
-			`Use an object: notion api ${toolName} '{"key": "value"}'`,
+			`Use an object: ncli api ${toolName} '{"key": "value"}'`,
 		);
 	}
 

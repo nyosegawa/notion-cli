@@ -1,6 +1,6 @@
 # Design Documents
 
-`@sakasegawa/notion-cli` の設計ドキュメント。
+`ncli` の設計ドキュメント。
 
 ## ファイル一覧
 

@@ -9,7 +9,7 @@ describe("TokenStore", () => {
 	let store: TokenStore;
 
 	beforeEach(() => {
-		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "notion-cli-test-"));
+		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ncli-test-"));
 		store = new TokenStore(tmpDir);
 	});
 

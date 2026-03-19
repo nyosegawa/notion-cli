@@ -11,10 +11,10 @@ import { registerTeamCommands, registerUserCommands } from "./commands/user.js";
 import { registerViewCommands } from "./commands/view.js";
 
 const program = new Command()
-	.name("notion")
-	.version("0.1.0")
+	.name("ncli")
+	.version("0.2.0")
 	.description(
-		"Notion CLI — read and write Notion from the terminal.\nAll commands support --json and --raw for structured output.",
+		"ncli — read and write Notion from the terminal.\nAll commands support --json and --raw for structured output.",
 	)
 	.option("--json", "Output as JSON (structured, parseable)")
 	.option("--raw", "Output raw MCP response (full server payload)")
@@ -25,7 +25,7 @@ const program = new Command()
 			process.stderr.write(str);
 			if (str.includes("error:")) {
 				process.stderr.write(
-					'Run "notion --help" for usage, or "notion <command> --help" for details.\n',
+					'Run "ncli --help" for usage, or "ncli <command> --help" for details.\n',
 				);
 			}
 		},
@@ -34,15 +34,15 @@ const program = new Command()
 		"after",
 		`
 Quick start:
-  notion search "keyword"                        # Find pages/databases
-  notion fetch <id>                              # Get content (use ID from search results)
-  notion page create --title "New" --parent <id> # Create a page
-  notion page update <id> --prop "Status=Done"   # Update properties
+  ncli search "keyword"                        # Find pages/databases
+  ncli fetch <id>                              # Get content (use ID from search results)
+  ncli page create --title "New" --parent <id> # Create a page
+  ncli page update <id> --prop "Status=Done"   # Update properties
 
 Workflow: search → fetch (get IDs/schema) → create/update/query
-For databases: always "notion fetch <db-id>" first to get data_source_id.
+For databases: always "ncli fetch <db-id>" first to get data_source_id.
 Use --json for structured output. Errors include recovery hints.
-Run "notion <command> --help" for details, examples, and tips (e.g. "notion db create --help").`,
+Run "ncli <command> --help" for details, examples, and tips (e.g. "ncli db create --help").`,
 	);
 
 registerLoginCommands(program);

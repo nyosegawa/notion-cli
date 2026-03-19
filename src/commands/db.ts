@@ -89,8 +89,8 @@ export function registerDbCommands(program: Command): void {
 			"after",
 			`
 Examples:
-  notion db create --title "Tasks" --parent <page-id> --prop "Name:title" --prop "Status:select=Open,Done"
-  notion db create --schema 'CREATE TABLE "T" ("Name" TITLE)' --parent <page-id>
+  ncli db create --title "Tasks" --parent <page-id> --prop "Name:title" --prop "Status:select=Open,Done"
+  ncli db create --schema 'CREATE TABLE "T" ("Name" TITLE)' --parent <page-id>
 
 Column types: TITLE, RICH_TEXT, DATE, SELECT('a','b'), MULTI_SELECT, NUMBER, CHECKBOX, URL
 Response contains data_source_id (collection://...) needed for page create and view create.`,
@@ -115,10 +115,10 @@ Response contains data_source_id (collection://...) needed for page create and v
 			"after",
 			`
 Examples:
-  notion db update <ds-id> --title "New Title"
-  notion db update <ds-id> --statements 'ADD COLUMN "Priority" SELECT'
+  ncli db update <ds-id> --title "New Title"
+  ncli db update <ds-id> --statements 'ADD COLUMN "Priority" SELECT'
 
-Get data_source_id: run "notion fetch <db-id>" and look for collection://... in the response.
+Get data_source_id: run "ncli fetch <db-id>" and look for collection://... in the response.
 Statements: ADD COLUMN, DROP COLUMN, RENAME COLUMN "Old" TO "New", ALTER COLUMN "Name" SET <type>`,
 		)
 		.action(async (id: string, opts: DbUpdateOptions, cmd: Command) => {
@@ -136,11 +136,11 @@ Statements: ADD COLUMN, DROP COLUMN, RENAME COLUMN "Old" TO "New", ALTER COLUMN 
 			"after",
 			`
 Example:
-  notion db query "https://www.notion.so/<db-id>?v=<view-id>"
+  ncli db query "https://www.notion.so/<db-id>?v=<view-id>"
 
 Requires a view URL with ?v= parameter (not just a DB URL).
-To get view URLs: run "notion fetch <db-id>".
-If no views exist: create one with "notion view create".`,
+To get view URLs: run "ncli fetch <db-id>".
+If no views exist: create one with "ncli view create".`,
 		)
 		.action(async (viewUrl: string, _opts: unknown, cmd: Command) => {
 			const { tool, args } = buildDbQueryCall(viewUrl);

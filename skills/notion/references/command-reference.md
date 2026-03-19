@@ -1,11 +1,11 @@
 # Command Reference
 
-Complete reference for all notion-cli commands.
+Complete reference for all ncli commands.
 
 ## search
 
 ```bash
-notion search "<query>" [--json] [--raw]
+ncli search "<query>" [--json] [--raw]
 ```
 
 Search pages and databases in the workspace.
@@ -23,7 +23,7 @@ Search pages and databases in the workspace.
 ## fetch
 
 ```bash
-notion fetch <url-or-id> [--json] [--raw]
+ncli fetch <url-or-id> [--json] [--raw]
 ```
 
 Get page or database content. Accepts Notion URLs or UUIDs.
@@ -46,7 +46,7 @@ Get page or database content. Accepts Notion URLs or UUIDs.
 ## page create
 
 ```bash
-notion page create --title "Title" --parent <id> [--prop "Key=Value"...] [--body "content"] [--data '{json}']
+ncli page create --title "Title" --parent <id> [--prop "Key=Value"...] [--body "content"] [--data '{json}']
 ```
 
 **Arguments:**
@@ -73,10 +73,10 @@ notion page create --title "Title" --parent <id> [--prop "Key=Value"...] [--body
 
 ```bash
 # Update properties
-notion page update <page-id> --prop "Key=Value" [--title "New Title"]
+ncli page update <page-id> --prop "Key=Value" [--title "New Title"]
 
 # Replace content
-notion page update <page-id> --body "# New content"
+ncli page update <page-id> --body "# New content"
 ```
 
 **--prop/--title and --body cannot be used together** (different MCP commands).
@@ -88,7 +88,7 @@ notion page update <page-id> --body "# New content"
 ## page move
 
 ```bash
-notion page move <id...> --to <parent-id>
+ncli page move <id...> --to <parent-id>
 ```
 
 Move one or more pages to a different parent.
@@ -101,7 +101,7 @@ Move one or more pages to a different parent.
 ## page duplicate
 
 ```bash
-notion page duplicate <page-id>
+ncli page duplicate <page-id>
 ```
 
 Duplicate a page.
@@ -110,13 +110,13 @@ Duplicate a page.
 
 ```bash
 # Using --prop shorthand
-notion db create --title "Tasks" --parent <page-id> \
+ncli db create --title "Tasks" --parent <page-id> \
   --prop "Name:title" \
   --prop "Status:select=Open,Done" \
   --prop "Priority:select=High,Medium,Low"
 
 # Using --schema with SQL DDL
-notion db create --schema 'CREATE TABLE "Tasks" ("Name" TITLE, "Status" SELECT)' --parent <page-id>
+ncli db create --schema 'CREATE TABLE "Tasks" ("Name" TITLE, "Status" SELECT)' --parent <page-id>
 ```
 
 **--prop format:** `"ColumnName:type=options"`
@@ -144,22 +144,22 @@ Always extract `database_id` and `data_source_id` from the response.
 ## db update
 
 ```bash
-notion db update <data-source-id> --title "New Title" --statements 'ADD COLUMN "Priority" SELECT'
+ncli db update <data-source-id> --title "New Title" --statements 'ADD COLUMN "Priority" SELECT'
 ```
 
-Requires `data_source_id` (get it from `notion fetch <db-id>`).
+Requires `data_source_id` (get it from `ncli fetch <db-id>`).
 
 ## db query
 
 ```bash
-notion db query "<view-url>"
+ncli db query "<view-url>"
 ```
 
 **Requires a view URL** — cannot query with a DB URL or ID.
 
 How to get a view URL:
-1. Check `notion fetch <db-id>` response
-2. If no views exist, create one with `notion view create`
+1. Check `ncli fetch <db-id>` response
+2. If no views exist, create one with `ncli view create`
 
 **Output example:**
 ```json
@@ -175,10 +175,10 @@ How to get a view URL:
 
 ```bash
 # Create (both database_id and data_source_id required)
-notion view create --data '{"database_id":"<db-id>","data_source_id":"collection://<ds-id>","type":"table","name":"All"}'
+ncli view create --data '{"database_id":"<db-id>","data_source_id":"collection://<ds-id>","type":"table","name":"All"}'
 
 # Update
-notion view update --data '{"view_id":"<view-id>","name":"Renamed"}'
+ncli view update --data '{"view_id":"<view-id>","name":"Renamed"}'
 ```
 
 `--data` JSON is recommended. View types: `table`, `board`, `list`, `calendar`, `gallery`, `timeline`
@@ -191,21 +191,21 @@ Created view "All" (table) — view://view-xxx
 ## comment create / list
 
 ```bash
-notion comment create <page-id> --body "Comment text"
-notion comment list <page-id> [--include-resolved]
+ncli comment create <page-id> --body "Comment text"
+ncli comment list <page-id> [--include-resolved]
 ```
 
 ## user list / team list
 
 ```bash
-notion user list [--query "alice"]
-notion team list [--query "engineering"]
+ncli user list [--query "alice"]
+ncli team list [--query "engineering"]
 ```
 
 ## meeting-notes query
 
 ```bash
-notion meeting-notes query [--data '{"filter":{...}}']
+ncli meeting-notes query [--data '{"filter":{...}}']
 ```
 
 Filter has complex nested structure; `--data` recommended.
@@ -213,8 +213,8 @@ Filter has complex nested structure; `--data` recommended.
 ## api (escape hatch)
 
 ```bash
-notion api <tool-name> '{"key":"value"}'
-echo '{"query":"test"}' | notion api notion-search
+ncli api <tool-name> '{"key":"value"}'
+echo '{"query":"test"}' | ncli api notion-search
 ```
 
 Use for MCP tools not covered by CLI commands or when complex arguments are needed.
@@ -223,10 +223,10 @@ Use for MCP tools not covered by CLI commands or when complex arguments are need
 
 | Error Situation | Hint |
 |---|---|
-| Using DB URL for db query | View URL required → `notion fetch <db-id>` or `notion view create` |
-| Using DB ID as parent for page create | data_source_id required → `notion fetch <db-id>` |
-| data_source_id Required | Run `notion fetch <db-id>` to find `collection://...` |
+| Using DB URL for db query | View URL required → `ncli fetch <db-id>` or `ncli view create` |
+| Using DB ID as parent for page create | data_source_id required → `ncli fetch <db-id>` |
+| data_source_id Required | Run `ncli fetch <db-id>` to find `collection://...` |
 | rich_text Required | Use `--body` to specify comment content |
-| Tool not found | Check `notion --help` for available commands |
+| Tool not found | Check `ncli --help` for available commands |
 | JSON parse error | Verify `--data '{"key": "value"}'` syntax |
 | --prop and --body used together | Split into separate commands |

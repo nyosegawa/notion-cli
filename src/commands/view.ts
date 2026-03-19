@@ -40,11 +40,11 @@ export function registerViewCommands(program: Command): void {
 			"after",
 			`
 Example:
-  notion view create --data '{"database_id":"<db-id>","data_source_id":"collection://<ds-id>","type":"table","name":"All"}'
+  ncli view create --data '{"database_id":"<db-id>","data_source_id":"collection://<ds-id>","type":"table","name":"All"}'
 
-Requires database_id and data_source_id. Get both by running "notion fetch <db-id>".
+Requires database_id and data_source_id. Get both by running "ncli fetch <db-id>".
 Types: table, board, list, calendar, timeline, gallery, form, chart, map, dashboard.
-The response contains a view URL (view://...) for use with "notion db query".`,
+The response contains a view URL (view://...) for use with "ncli db query".`,
 		)
 		.action(async (opts: ViewOptions, cmd: Command) => {
 			const { tool, args } = buildViewCreateCall(opts);

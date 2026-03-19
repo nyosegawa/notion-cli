@@ -18,11 +18,11 @@ describe("CliError", () => {
 
 describe("formatError", () => {
 	it("formats CliError with all fields", () => {
-		const err = new CliError("Page not found", "ID is invalid", "Run notion search first");
+		const err = new CliError("Page not found", "ID is invalid", "Run ncli search first");
 		const output = formatError(err);
 		expect(output).toContain("Page not found");
 		expect(output).toContain("ID is invalid");
-		expect(output).toContain("Run notion search first");
+		expect(output).toContain("Run ncli search first");
 	});
 
 	it("formats CliError without hint", () => {

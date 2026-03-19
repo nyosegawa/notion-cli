@@ -1,4 +1,4 @@
-# notion-cli
+# ncli
 
 Remote Notion MCP (`https://mcp.notion.com/mcp`) の CLI ラッパー。
 
@@ -13,7 +13,7 @@ npm run build && npm run typecheck && npm run lint && npm test
 - `docs/` — 設計 (architecture, commands, auth, design-decisions, agent-first-design)
 - `docs/agent-first-design.md` — Agent-first CLI 設計思想 (出力・ディスカバリ・エラーの設計原則)
 - `research/` — 調査結果 (事実のみ)
-- `skills/` — Agent Skills (`skills/notion/` — notion-cli 活用スキル)
+- `skills/` — Agent Skills (`skills/notion/` — ncli 活用スキル)
 - `PHASE.md` — フェーズ計画 (チェックボックスで進捗追跡)
 
 ## Phase Workflow
@@ -36,13 +36,13 @@ npm run build && npm run typecheck && npm run lint && npm test
 - `biome.json` を編集しない
 - `--no-verify` を使わない
 - テストを書いてから実装 (テストが仕様)
-- `notion api` escape hatch を常に維持
+- `ncli api` escape hatch を常に維持
 - エラーは `CliError` (What + Why + Hint パターン)。プロダクションコードで `new Error()` は使わない
 - 出力は `--json` / `--raw` 対応必須。デフォルトは JSON テキストを pretty-print
 - MCP の `isError` レスポンスは `CliError` に変換 (agent-recoverable なヒント付き)
 - `--data` の JSON パースエラーは `parseJsonData()` ヘルパー経由で CliError に統一
 - MCP ツール引数名は公式ドキュメントではなく `research/01-notion-remote-mcp-tools.md` の inputSchema が正
-- MCP ツール名を CLI のインターフェースとして露出しない（`notion api` の escape hatch のみ）
+- MCP ツール名を CLI のインターフェースとして露出しない（`ncli api` の escape hatch のみ）
 - 設計原則の詳細は `docs/agent-first-design.md` を参照
 
 ## Testing

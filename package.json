@@ -1,10 +1,10 @@
 {
-	"name": "@sakasegawa/notion-cli",
-	"version": "0.1.0",
-	"description": "CLI wrapper for Remote Notion MCP",
+	"name": "ncli",
+	"version": "0.2.0",
+	"description": "CLI wrapper for Notion's Remote MCP server",
 	"type": "module",
 	"bin": {
-		"notion": "dist/index.js"
+		"ncli": "dist/index.js"
 	},
 	"scripts": {
 		"build": "tsup src/index.ts --format esm --dts --clean",
@@ -31,6 +31,7 @@
 	},
 	"keywords": [
 		"notion",
+		"ncli",
 		"cli",
 		"mcp",
 		"model-context-protocol",

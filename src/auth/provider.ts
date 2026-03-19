@@ -52,7 +52,7 @@ export class NotionOAuthProvider implements OAuthClientProvider {
 			throw new CliError(
 				"No code verifier saved",
 				"OAuth state is corrupted",
-				"Run notion login to re-authenticate",
+				"Run ncli login to re-authenticate",
 			);
 		}
 		return verifier;

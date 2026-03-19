@@ -37,7 +37,7 @@ export class CallbackServer {
 					res.writeHead(400, { "Content-Type": "text/html" });
 					res.end(`<h1>Authorization Failed</h1><p>${description}</p>`);
 					reject(
-						new CliError("OAuth authorization failed", description, "Run notion login to retry"),
+						new CliError("OAuth authorization failed", description, "Run ncli login to retry"),
 					);
 					return;
 				}
@@ -49,7 +49,7 @@ export class CallbackServer {
 						new CliError(
 							"Missing authorization code",
 							"OAuth callback did not include a code parameter",
-							"Run notion login to retry",
+							"Run ncli login to retry",
 						),
 					);
 					return;
@@ -74,7 +74,7 @@ export class CallbackServer {
 					new CliError(
 						"OAuth callback timed out",
 						`No response received within ${timeoutMs / 1000} seconds`,
-						"Run notion login to retry",
+						"Run ncli login to retry",
 					),
 				);
 				this.stop();
