@@ -54,6 +54,7 @@ export class MCPConnection {
 
 				const code = await callbackPromise;
 				await transport.finishAuth(code);
+				tokenStore.saveCallbackPort(callbackServer.port);
 
 				// Reconnect with new tokens
 				transport = new StreamableHTTPClientTransport(serverUrl, {

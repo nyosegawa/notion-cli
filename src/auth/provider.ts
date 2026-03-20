@@ -36,7 +36,6 @@ export class NotionOAuthProvider implements OAuthClientProvider {
 
 	async saveClientInformation(info: OAuthClientInformationFull): Promise<void> {
 		this.tokenStore.saveClientInfo(info as unknown as Record<string, unknown>);
-		this.tokenStore.saveCallbackPort(this.callbackServer.port);
 	}
 
 	tokens(): OAuthTokens | undefined {
