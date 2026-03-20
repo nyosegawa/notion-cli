@@ -1,4 +1,9 @@
+import { createRequire } from "node:module";
 import { Command } from "commander";
+
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json") as { version: string };
+
 import { registerApiCommand } from "./commands/api.js";
 import { registerCommentCommands } from "./commands/comment.js";
 import { registerDbCommands } from "./commands/db.js";
@@ -14,7 +19,7 @@ import { registerViewCommands } from "./commands/view.js";
 
 const program = new Command()
 	.name("ncli")
-	.version("0.2.0")
+	.version(version)
 	.description(
 		"ncli — read and write Notion from the terminal.\nMCP commands use OAuth. REST API commands (rest, file) use integration token.",
 	)

@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
@@ -7,6 +8,9 @@ import { NotionOAuthProvider } from "../auth/provider.js";
 import { TokenStore } from "../auth/token-store.js";
 import { CONFIG_DIR, MCP_SERVER_URL } from "../util/config.js";
 import { CliError } from "../util/errors.js";
+
+const require = createRequire(import.meta.url);
+const { version } = require("../../package.json") as { version: string };
 
 export class MCPConnection {
 	private client: Client | null = null;
@@ -23,7 +27,7 @@ export class MCPConnection {
 		const provider = new NotionOAuthProvider(tokenStore, callbackServer);
 		const serverUrl = new URL(MCP_SERVER_URL);
 
-		const client = new Client({ name: "ncli", version: "0.2.0" }, { capabilities: {} });
+		const client = new Client({ name: "ncli", version }, { capabilities: {} });
 		this.client = client;
 
 		let transport = new StreamableHTTPClientTransport(serverUrl, {
