@@ -20,7 +20,16 @@ export class MCPConnection {
 		const callbackServer = new CallbackServer();
 		this.callbackServer = callbackServer;
 
-		// Start the callback server first to get the port
+		// Reuse the port from the previous client registration to avoid redirect_uri mismatch
+		const savedPort = tokenStore.readCallbackPort();
+		await callbackServer.start(savedPort);
+
+		// If the port changed (fallback to random), the cached client registration is invalid
+		if (savedPort !== undefined && callbackServer.port !== savedPort) {
+			tokenStore.deleteClientInfo();
+			tokenStore.deleteCallbackPort();
+		}
+
 		const callbackPromise = callbackServer.waitForCallback();
 
 		const provider = new NotionOAuthProvider(tokenStore, callbackServer);
