@@ -86,24 +86,10 @@ export class TokenStore {
 		this.deleteFile("rest-token.json");
 	}
 
-	readCallbackPort(): number | undefined {
-		const data = this.readJson<{ port: number }>("callback-port.json");
-		return data?.port;
-	}
-
-	saveCallbackPort(port: number): void {
-		this.writeJson("callback-port.json", { port });
-	}
-
-	deleteCallbackPort(): void {
-		this.deleteFile("callback-port.json");
-	}
-
 	deleteAll(): void {
 		this.deleteTokens();
 		this.deleteClientInfo();
 		this.deleteCodeVerifier();
 		this.deleteRestToken();
-		this.deleteCallbackPort();
 	}
 }

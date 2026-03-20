@@ -21,17 +21,13 @@ export class MCPConnection {
 		this.callbackServer = callbackServer;
 
 		// Reuse the port from the previous client registration to avoid redirect_uri mismatch
-		const savedPort = tokenStore.readCallbackPort();
+		const savedPort = extractPortFromClientInfo(tokenStore.readClientInfo());
 		await callbackServer.start(savedPort);
 
-		// If the actual port differs from the saved one (or no port was saved but a
-		// client registration exists), the cached redirect_uri is stale — clear it so
-		// the SDK re-registers with the new port.
-		const portChanged = savedPort !== undefined && callbackServer.port !== savedPort;
-		const legacyClient = savedPort === undefined && tokenStore.readClientInfo() !== undefined;
-		if (portChanged || legacyClient) {
+		// If the actual port differs from the saved one, the cached redirect_uri is
+		// stale — clear client registration so the SDK re-registers with the new port.
+		if (savedPort !== undefined && callbackServer.port !== savedPort) {
 			tokenStore.deleteClientInfo();
-			tokenStore.deleteCallbackPort();
 		}
 
 		const callbackPromise = callbackServer.waitForCallback();
@@ -54,7 +50,6 @@ export class MCPConnection {
 
 				const code = await callbackPromise;
 				await transport.finishAuth(code);
-				tokenStore.saveCallbackPort(callbackServer.port);
 
 				// Reconnect with new tokens
 				transport = new StreamableHTTPClientTransport(serverUrl, {
@@ -185,4 +180,17 @@ function mcpErrorToCliError(toolName: string, result: Record<string, unknown>): 
 	const message = extractMcpErrorMessage(result);
 	const rule = HINT_RULES.find((r) => r.pattern.test(message) && (!r.tool || r.tool === toolName));
 	return new CliError(`${toolName} failed`, message, rule?.hint);
+}
+
+export function extractPortFromClientInfo(
+	info: Record<string, unknown> | undefined,
+): number | undefined {
+	const uris = info?.redirect_uris;
+	if (!Array.isArray(uris) || typeof uris[0] !== "string") return undefined;
+	try {
+		const port = new URL(uris[0]).port;
+		return port ? Number(port) : undefined;
+	} catch {
+		return undefined;
+	}
 }

@@ -107,36 +107,17 @@ describe("TokenStore", () => {
 		});
 	});
 
-	describe("callbackPort", () => {
-		it("returns undefined when no file exists", () => {
-			expect(store.readCallbackPort()).toBeUndefined();
-		});
-
-		it("saves and reads callback port", () => {
-			store.saveCallbackPort(54975);
-			expect(store.readCallbackPort()).toBe(54975);
-		});
-
-		it("deletes callback port", () => {
-			store.saveCallbackPort(54975);
-			store.deleteCallbackPort();
-			expect(store.readCallbackPort()).toBeUndefined();
-		});
-	});
-
 	describe("deleteAll", () => {
-		it("deletes all files including rest token and callback port", () => {
+		it("deletes all files including rest token", () => {
 			store.saveTokens({ access_token: "abc" });
 			store.saveClientInfo({ client_id: "id" });
 			store.saveCodeVerifier("v");
 			store.saveRestToken("ntn_abc123");
-			store.saveCallbackPort(54975);
 			store.deleteAll();
 			expect(store.readTokens()).toBeUndefined();
 			expect(store.readClientInfo()).toBeUndefined();
 			expect(store.readCodeVerifier()).toBeUndefined();
 			expect(store.readRestToken()).toBeUndefined();
-			expect(store.readCallbackPort()).toBeUndefined();
 		});
 	});
 
