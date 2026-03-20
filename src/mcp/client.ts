@@ -24,8 +24,12 @@ export class MCPConnection {
 		const savedPort = tokenStore.readCallbackPort();
 		await callbackServer.start(savedPort);
 
-		// If the port changed (fallback to random), the cached client registration is invalid
-		if (savedPort !== undefined && callbackServer.port !== savedPort) {
+		// If the actual port differs from the saved one (or no port was saved but a
+		// client registration exists), the cached redirect_uri is stale — clear it so
+		// the SDK re-registers with the new port.
+		const portChanged = savedPort !== undefined && callbackServer.port !== savedPort;
+		const legacyClient = savedPort === undefined && tokenStore.readClientInfo() !== undefined;
+		if (portChanged || legacyClient) {
 			tokenStore.deleteClientInfo();
 			tokenStore.deleteCallbackPort();
 		}
