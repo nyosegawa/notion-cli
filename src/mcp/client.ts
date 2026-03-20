@@ -20,7 +20,16 @@ export class MCPConnection {
 		const callbackServer = new CallbackServer();
 		this.callbackServer = callbackServer;
 
-		// Start the callback server first to get the port
+		// Reuse the port from the previous client registration to avoid redirect_uri mismatch
+		const savedPort = extractPortFromClientInfo(tokenStore.readClientInfo());
+		await callbackServer.start(savedPort);
+
+		// If the actual port differs from the saved one, the cached redirect_uri is
+		// stale — clear client registration so the SDK re-registers with the new port.
+		if (savedPort !== undefined && callbackServer.port !== savedPort) {
+			tokenStore.deleteClientInfo();
+		}
+
 		const callbackPromise = callbackServer.waitForCallback();
 
 		const provider = new NotionOAuthProvider(tokenStore, callbackServer);
@@ -171,4 +180,17 @@ function mcpErrorToCliError(toolName: string, result: Record<string, unknown>): 
 	const message = extractMcpErrorMessage(result);
 	const rule = HINT_RULES.find((r) => r.pattern.test(message) && (!r.tool || r.tool === toolName));
 	return new CliError(`${toolName} failed`, message, rule?.hint);
+}
+
+export function extractPortFromClientInfo(
+	info: Record<string, unknown> | undefined,
+): number | undefined {
+	const uris = info?.redirect_uris;
+	if (!Array.isArray(uris) || typeof uris[0] !== "string") return undefined;
+	try {
+		const port = new URL(uris[0]).port;
+		return port ? Number(port) : undefined;
+	} catch {
+		return undefined;
+	}
 }
