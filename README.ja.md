@@ -8,13 +8,16 @@
 
 **[English](./README.md)**
 
-[Remote Notion MCP](https://mcp.notion.com/mcp) の CLI ラッパー — ターミナルから Notion を読み書きできます。
+Notion 用 CLI — MCP + REST API 対応。ターミナルから Notion を読み書きできます。
 
 人間とコーディングエージェント（Claude Code, Codex 等）の両方に最適化。出力はすべて構造化 JSON、エラーにはリカバリーヒント付き。
 
 ## 特徴
 
 - Notion ワークスペースへのフルアクセス: 検索、ページ、データベース、ビュー、コメント、ユーザー、チーム、ミーティングノート
+- REST API 直接アクセス: `ncli rest` で任意の Notion API を呼び出し
+- ファイルアップロード: `ncli file upload` でページにファイルを添付
+- デュアル認証: OAuth（MCP コマンド）+ インテグレーショントークン（`NOTION_API_KEY` 環境変数 または `ncli rest login`）
 - OAuth 2.0 + PKCE 認証（ブラウザベース、設定不要）
 - Agent-first 設計: `--json` 出力、構造化エラーヒント（What + Why + Hint）
 - エスケープハッチ: `ncli api <tool> [json]` で MCP ツールを直接呼び出し
@@ -47,6 +50,20 @@ ncli page create --parent collection://<ds-id> \
   --title "タスク1" --prop "Status=Open"
 ```
 
+### REST API
+
+```bash
+# REST API セットアップ（インテグレーショントークン）
+ncli rest login
+
+# REST API を直接呼び出し
+ncli rest GET /users/me
+ncli rest GET /pages/<page-id>
+
+# ファイルをアップロード
+ncli file upload ./image.png
+```
+
 ## コマンド一覧
 
 | コマンド | 説明 |
@@ -70,6 +87,10 @@ ncli page create --parent collection://<ds-id> \
 | `ncli user list` | ワークスペースのユーザーを一覧・検索 |
 | `ncli team list` | ワークスペースのチームを一覧・検索 |
 | `ncli meeting-notes query` | ミーティングノートをフィルタ付きでクエリ |
+| `ncli rest login` | REST API インテグレーショントークンを保存 |
+| `ncli rest logout` | 保存済み REST API トークンを削除 |
+| `ncli rest <METHOD> <path> [json]` | 任意の Notion REST API エンドポイントを呼び出し |
+| `ncli file upload <file-path>` | ファイルをアップロード（file_upload_id を返し、ページへの添付方法を案内） |
 | `ncli api <tool> [json]` | MCP ツールを直接呼び出し（エスケープハッチ） |
 
 `ncli <command> --help` で詳細な使い方、例、ヒントを確認できます。
@@ -146,6 +167,7 @@ echo '{"query":"test"}' | ncli api notion-search
 
 - Node.js >= 18
 - Notion アカウント（ブラウザ経由の OAuth 認証）
+- Notion インテグレーショントークン（REST API コマンド用 — https://www.notion.so/profile/integrations で取得）
 
 ## 法的情報
 

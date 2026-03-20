@@ -80,15 +80,44 @@ describe("TokenStore", () => {
 		});
 	});
 
+	describe("restToken", () => {
+		it("returns undefined when no file exists", () => {
+			expect(store.readRestToken()).toBeUndefined();
+		});
+
+		it("saves and reads rest token", () => {
+			store.saveRestToken("ntn_abc123");
+			expect(store.readRestToken()).toBe("ntn_abc123");
+		});
+
+		it("deletes rest token", () => {
+			store.saveRestToken("ntn_abc123");
+			store.deleteRestToken();
+			expect(store.readRestToken()).toBeUndefined();
+		});
+
+		it("delete is no-op when file missing", () => {
+			expect(() => store.deleteRestToken()).not.toThrow();
+		});
+
+		it("writes file with 0o600 permissions", () => {
+			store.saveRestToken("ntn_abc123");
+			const stat = fs.statSync(path.join(tmpDir, "rest-token.json"));
+			expect(stat.mode & 0o777).toBe(0o600);
+		});
+	});
+
 	describe("deleteAll", () => {
-		it("deletes all files", () => {
+		it("deletes all files including rest token", () => {
 			store.saveTokens({ access_token: "abc" });
 			store.saveClientInfo({ client_id: "id" });
 			store.saveCodeVerifier("v");
+			store.saveRestToken("ntn_abc123");
 			store.deleteAll();
 			expect(store.readTokens()).toBeUndefined();
 			expect(store.readClientInfo()).toBeUndefined();
 			expect(store.readCodeVerifier()).toBeUndefined();
+			expect(store.readRestToken()).toBeUndefined();
 		});
 	});
 

@@ -16,15 +16,18 @@ Your use of Notion's services through ncli remains subject to Notion's own Terms
 
 ncli authenticates with Notion via OAuth 2.0 with PKCE through your web browser. The resulting tokens (access token and refresh token) are stored **locally on your machine only**, in your OS config directory with file permissions restricted to your user account (0o600). ncli does not transmit tokens to any server other than Notion's official MCP endpoint at `https://mcp.notion.com/mcp`.
 
+For REST API commands (`ncli rest`, `ncli file`), ncli uses a Notion integration token (Bearer token). This token can be provided via the `NOTION_API_KEY` environment variable or stored locally by running `ncli rest login`. Stored tokens are saved in the same config directory with restricted permissions (0o600).
+
 You can delete all locally stored tokens at any time by running:
 
 ```
-ncli logout
+ncli logout          # Remove OAuth tokens (MCP)
+ncli rest logout     # Remove REST API integration token
 ```
 
 ## 4. Data Handling
 
-ncli does **not** cache, store, index, or retain any Notion content. All data flows directly between your machine and `https://mcp.notion.com/mcp`. There is no intermediary server.
+ncli does **not** cache, store, index, or retain any Notion content. All data flows directly between your machine and Notion's servers at `https://mcp.notion.com/mcp` (MCP commands) and `https://api.notion.com/v1` (REST API commands). There is no intermediary server.
 
 ## 5. User Responsibility
 

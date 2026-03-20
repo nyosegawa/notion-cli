@@ -18,6 +18,10 @@ ncli team list
 ncli meeting-notes query
 
 ncli api <tool-name> [json]     # raw escape hatch
+
+ncli rest login / logout          # REST API token management
+ncli rest <METHOD> <path> [json]  # REST API escape hatch
+ncli file upload <path>           # File upload (REST API, returns file_upload_id)
 ```
 
 ## MCP ツール → CLI マッピング
@@ -380,4 +384,38 @@ ncli page create --data '{"pages":[{"properties":{"Name":"タスク1","Status":"
 ncli view create --data '{"database_id":"<db-id>","data_source_id":"collection://<ds-id>","type":"table","name":"All"}'
 # → レスポンスから view URL (view://...) を取得
 ncli db query "https://www.notion.so/<db-id>?v=<view-id>"
+```
+
+## REST API コマンド
+
+### `ncli rest login`
+Integration Token を保存。
+
+### `ncli rest logout`
+保存済みトークンを削除。
+
+### `ncli rest <METHOD> <path> [json]`
+
+```
+CLI: ncli rest GET /pages/abc123
+REST: GET https://api.notion.com/v1/pages/abc123
+
+CLI: ncli rest POST /search '{"query":"test"}'
+REST: POST https://api.notion.com/v1/search body={"query":"test"}
+```
+
+### `ncli file upload <file-path>`
+
+アップロードのみ。ページへの添付は `ncli rest PATCH` で行う。
+
+```
+CLI: ncli file upload ./image.png --name "Screenshot"
+REST: POST /file_uploads (create) → POST /file_uploads/{id}/send (upload)
+# → file_upload_id を返す + 添付用コマンドを表示
+
+# 添付 (末尾)
+ncli rest PATCH /blocks/<page-id>/children '{"children":[{"type":"file","file":{"type":"file_upload","file_upload":{"id":"<file_upload_id>"},"name":"image.png"}}]}'
+
+# 添付 (任意位置 — position パラメータ)
+ncli rest PATCH /blocks/<page-id>/children '{"position":{"type":"after_block","after_block":{"id":"<block-id>"}},"children":[...]}'
 ```

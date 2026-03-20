@@ -3,9 +3,11 @@ import { registerApiCommand } from "./commands/api.js";
 import { registerCommentCommands } from "./commands/comment.js";
 import { registerDbCommands } from "./commands/db.js";
 import { registerFetchCommands } from "./commands/fetch.js";
+import { registerFileCommands } from "./commands/file.js";
 import { registerLoginCommands } from "./commands/login.js";
 import { registerMeetingNotesCommands } from "./commands/meeting-notes.js";
 import { registerPageCommands } from "./commands/page.js";
+import { registerRestCommands } from "./commands/rest.js";
 import { registerSearchCommands } from "./commands/search.js";
 import { registerTeamCommands, registerUserCommands } from "./commands/user.js";
 import { registerViewCommands } from "./commands/view.js";
@@ -14,10 +16,10 @@ const program = new Command()
 	.name("ncli")
 	.version("0.2.0")
 	.description(
-		"ncli — read and write Notion from the terminal.\nAll commands support --json and --raw for structured output.",
+		"ncli — read and write Notion from the terminal.\nMCP commands use OAuth. REST API commands (rest, file) use integration token.",
 	)
 	.option("--json", "Output as JSON (structured, parseable)")
-	.option("--raw", "Output raw MCP response (full server payload)")
+	.option("--raw", "Output raw response (full server payload)")
 	.option("--verbose", "Verbose output")
 	.option("--no-color", "Disable colors")
 	.configureOutput({
@@ -33,11 +35,17 @@ const program = new Command()
 	.addHelpText(
 		"after",
 		`
-Quick start:
+Quick start (MCP — OAuth auth):
   ncli search "keyword"                        # Find pages/databases
   ncli fetch <id>                              # Get content (use ID from search results)
   ncli page create --title "New" --parent <id> # Create a page
   ncli page update <id> --prop "Status=Done"   # Update properties
+
+Quick start (REST API — integration token):
+  ncli rest login                              # Save integration token (one-time)
+  ncli rest GET /users/me                      # Verify auth
+  ncli rest GET /pages/<id>                    # Get page via REST API
+  ncli file upload <page-id> ./image.png       # Upload a file
 
 Workflow: search → fetch (get IDs/schema) → create/update/query
 For databases: always "ncli fetch <db-id>" first to get data_source_id.
@@ -56,5 +64,7 @@ registerUserCommands(program);
 registerTeamCommands(program);
 registerMeetingNotesCommands(program);
 registerApiCommand(program);
+registerRestCommands(program);
+registerFileCommands(program);
 
 export { program };

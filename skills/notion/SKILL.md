@@ -1,205 +1,173 @@
 ---
 name: notion
 description: >
-  Operate Notion workspaces via ncli.
-  Covers page search/create/update, database create/query, view management, comments, and more.
+  Operate Notion workspaces via ncli (MCP + REST API).
+  Covers page search/create/update, database create/query, view management, comments, file upload, and direct REST API access.
   Use when user asks to "Notion に書いて", "ページ作って", "タスク管理", "DB 作成",
-  "Notion で検索", "議事録", "create a Notion page", "track tasks in Notion",
-  or any Notion workspace operation. Also triggers on "notion" keyword in requests.
-compatibility: Requires ncli installed and authenticated (ncli login). Claude Code only.
+  "Notion で検索", "議事録", "ファイルアップロード", "create a Notion page", "track tasks in Notion",
+  "upload file to Notion", or any Notion workspace operation. Also triggers on "notion" keyword in requests.
+compatibility: Requires ncli installed and authenticated (ncli login for MCP, ncli rest login for REST API). Claude Code only.
 metadata:
   author: sakasegawa
-  version: 1.0.0
+  version: 2.0.0
 ---
 
 # Notion CLI Skill
 
-Guide for operating Notion workspaces using ncli.
+Operate Notion workspaces using ncli. Two backends:
+- **MCP** (OAuth) — search, pages, databases, views, comments, users, teams
+- **REST API** (integration token) — file upload, block operations, any REST endpoint
 
 ## Prerequisites
 
-Verify authentication before any operation:
-
 ```bash
-ncli whoami
+# MCP auth (required for most commands)
+ncli whoami                    # Check auth status
+ncli login                     # If not authenticated
+
+# REST API auth (required for ncli rest / ncli file commands)
+ncli rest login                # Save integration token (one-time)
 ```
 
-If this fails, run `ncli login` to complete OAuth authentication in the browser.
+REST API requires integration access to target pages:
+  Go to https://www.notion.so/profile/integrations/internal
+  → select your integration → Content access → add pages.
 
 ## Core Pattern: Search → Fetch → Act
-
-Almost every workflow follows these three steps:
 
 1. **Search** — `ncli search "<query>" --json` to find pages/databases
 2. **Fetch** — `ncli fetch <id> --json` to get details and extract IDs
 3. **Act** — Use the extracted IDs to create/update/query
 
-### ID Types
+See `references/id-patterns.md` for ID extraction patterns.
 
-| ID | Format | Purpose |
-|---|---|---|
-| page_id | `abc123-def456` | Target for page operations, parent for page create |
-| database_id | `abc123-def456` | Required for view create |
-| data_source_id | `collection://ds-xxx` | Parent for adding pages to DB, view create, db update |
-| view_url | `view://view-xxx` or `https://...?v=xxx` | Target for db query |
+## Key Commands
 
-`ncli fetch <db-id>` response contains `data_source_id` and `view_url`.
-See `references/id-patterns.md` for detailed extraction patterns.
+### MCP Commands (OAuth)
 
-## Command Quick Reference
-
-### Authentication
-| Command | Description |
-|---|---|
-| `ncli login` | OAuth login |
-| `nclilogout` | Log out |
-| `ncli whoami` | Show current user |
-
-### Search & Fetch
 | Command | Description |
 |---|---|
 | `ncli search "<query>"` | Search pages/databases |
 | `ncli fetch <url-or-id>` | Get page/database content |
+| `ncli page create --title "T" --parent <id>` | Create page |
+| `ncli page update <id> --prop "Key=Value"` | Update properties |
+| `ncli page update <id> --body "content"` | Replace content |
+| `ncli page move <id> --to <parent-id>` | Move page |
+| `ncli page duplicate <id>` | Duplicate page |
+| `ncli db create --title "T" --parent <id> --prop "Name:title"` | Create database |
+| `ncli db query "<view-url>"` | Query database (view URL required) |
+| `ncli comment create <page-id> --body "text"` | Add comment |
+| `ncli api <tool> '{json}'` | Call any MCP tool directly |
 
-### Page Operations
+### REST API Commands (Integration Token)
+
 | Command | Description |
 |---|---|
-| `nclipage create --title "T" --parent <id>` | Create page |
-| `nclipage update <id> --prop "Key=Value"` | Update properties |
-| `nclipage update <id> --body "content"` | Replace content |
-| `nclipage move <id> --to <parent-id>` | Move page |
-| `nclipage duplicate <id>` | Duplicate page |
+| `ncli file upload <file-path>` | Upload file (returns file_upload_id) |
+| `ncli rest GET <path>` | GET request |
+| `ncli rest POST <path> '{json}'` | POST request |
+| `ncli rest PATCH <path> '{json}'` | PATCH request |
+| `ncli rest DELETE <path>` | DELETE request |
 
-### Database Operations
-| Command | Description |
-|---|---|
-| `nclidb create --title "T" --parent <page-id> --prop "Name:title" --prop "Status:select=A,B"` | Create database |
-| `nclidb update <ds-id> --statements 'ADD COLUMN "Col" TYPE'` | Alter schema |
-| `nclidb query "<view-url>"` | Query database (view URL required) |
-
-### Views, Comments & More
-| Command | Description |
-|---|---|
-| `ncliview create --data '{...}'` | Create view (JSON required) |
-| `ncliview update --data '{...}'` | Update view |
-| `nclicomment create <page-id> --body "text"` | Add comment |
-| `nclicomment list <page-id>` | List comments |
-| `ncliuser list` | List users |
-| `ncliteam list` | List teams |
-| `nclimeeting-notes query` | Query meeting notes |
-| `ncliapi <tool> '{json}'` | Call any MCP tool directly (escape hatch) |
-
-See `references/command-reference.md` for detailed arguments and output examples.
+See `references/command-reference.md` for full arguments and examples.
 
 ### Global Flags
 
-- `--json` — Structured JSON output (always use this for programmatic access)
-- `--raw` — Raw MCP response
+- `--json` — Structured JSON output (always use for programmatic access)
+- `--raw` — Raw response
 - `--data '{json}'` — Override all flags with direct JSON input
 
 ## Common Workflows
 
-### 1. Search, Fetch, and Update a Page
+### 1. Search, Fetch, and Update
 
 ```bash
-# Search
-ncli search "project plan" --json
-# → Pick page_id from results[].id
-
-# View content
-ncli fetch <page-id> --json
-
-# Update properties
+ncli search "project plan" --json       # → results[].id
+ncli fetch <page-id> --json             # → content
 ncli page update <page-id> --prop "Status=Done"
-
-# Update content (separate command from properties)
-ncli page update <page-id> --body "# Updated content"
 ```
 
-### 2. Create New Pages
+### 2. Database Lifecycle
 
 ```bash
-# Create under a parent page
-ncli page create --title "Meeting Notes 3/18" --parent <page-id> --body "# Agenda\n- Status update"
+# Create DB → extract data_source_id (collection://...) from response
+ncli db create --title "Tasks" --parent <page-id> \
+  --prop "Name:title" --prop "Status:select=Open,Done"
 
-# Pipe long content via stdin
-echo "# Long document..." | ncli page create --title "Document" --parent <page-id> --body -
+# Create view → extract view_url
+ncli view create --data '{"database_id":"<db-id>","data_source_id":"collection://<ds-id>","type":"table","name":"All"}'
 
-# Create in a database (requires data_source_id)
-ncli page create --parent collection://<ds-id> --title "Task 1" --prop "Status=Open" --prop "Priority=High"
-```
+# Add entries
+ncli page create --parent collection://<ds-id> --title "Task 1" --prop "Status=Open"
 
-### 3. Database Creation to Query (Full Lifecycle)
-
-```bash
-# Step 1: Create database
-ncli db create --title "Task Tracker" --parent <page-id> \
-  --prop "Name:title" \
-  --prop "Status:select=Backlog,Todo,In Progress,Done" \
-  --prop "Priority:select=High,Medium,Low" \
-  --prop "Assignee:rich_text" \
-  --prop "Due:date"
-# → Extract database_id and data_source_id (collection://...) from response
-
-# Step 2: Create view (both database_id and data_source_id required)
-ncli view create --data '{"database_id":"<db-id>","data_source_id":"collection://<ds-id>","type":"table","name":"All Tasks"}'
-# → Extract view_url (view://...) from response
-
-# Step 3: Add tasks
-ncli page create --parent collection://<ds-id> --title "Implement feature" --prop "Status=Todo" --prop "Priority=High"
-
-# Step 4: Query (view URL required)
+# Query
 ncli db query "<view-url>"
 ```
 
-### 4. Information Lookup
+### 3. File Upload (REST API)
 
 ```bash
-# Workspace search
-ncli search "weekly review" --json
+# Step 1: Upload file → returns file_upload_id + attach hint
+ncli file upload ./screenshot.png
 
-# Get page content
+# Step 2: Fetch page to find block IDs (MCP or REST)
 ncli fetch <page-id> --json
+# Or: ncli rest GET /blocks/<page-id>/children
 
-# List database entries
-ncli db query "<view-url>" --json
+# Step 3: Attach to page (append to end)
+ncli rest PATCH /blocks/<page-id>/children '{"children":[{"type":"file","file":{"type":"file_upload","file_upload":{"id":"<file_upload_id>"},"name":"screenshot.png"}}]}'
 
-# Check comments
-ncli comment list <page-id> --json
+# Or: Insert after a specific block
+ncli rest PATCH /blocks/<page-id>/children '{"position":{"type":"after_block","after_block":{"id":"<block-id>"}},"children":[...]}'
 ```
 
-### 5. Organize Content
+### 4. Direct REST API Access
 
 ```bash
-# Move page to a different parent
-ncli page move <page-id> --to <new-parent-id>
-
-# Bulk move multiple pages
-ncli page move <id1> <id2> <id3> --to <parent-id>
-
-# Duplicate a page
-ncli page duplicate <page-id>
+ncli rest GET /users/me                 # Verify auth
+ncli rest GET /pages/<page-id>          # Get page
+ncli rest POST /search '{"query":"x"}'  # Search
+ncli rest PATCH /blocks/<id>/children '{"children":[...]}' # Add blocks
 ```
 
 ## Important Notes
 
-1. **`page update` has separate operations for properties and content**
-   - `--prop`/`--title` and `--body` cannot be used together
-   - Properties: `ncli page update <id> --prop "K=V"`
-   - Content: `ncli page update <id> --body "..."`
+1. **`page update`: properties and content are separate commands** — `--prop`/`--title` and `--body` cannot be combined
+2. **`db query` requires a view URL** — run `ncli fetch <db-id>` to get it, or create one with `ncli view create`
+3. **`view create` requires both `database_id` AND `data_source_id`** — get both from `ncli fetch <db-id>`
+4. **DB page parent uses `collection://` prefix** — `--parent collection://<ds-id>`
+5. **`ncli file upload` returns file_upload_id** — attach to page via `ncli rest PATCH` (the command prints the exact attach command)
+6. **REST API requires separate auth from MCP** — `ncli rest login` or `NOTION_API_KEY` env var
+7. **REST API requires page access** — add pages via integration settings at https://www.notion.so/profile/integrations/internal
+8. **Errors include recovery hints** — follow the Hint to self-recover
 
-2. **`db query` requires a view URL** (not a DB URL/ID)
-   - Check `ncli fetch <db-id>` for existing view URLs
-   - If none exist, create one with `ncli view create`
+## Troubleshooting
 
-3. **`view create` requires both `database_id` AND `data_source_id`**
-   - Get both from `ncli fetch <db-id>`
+### MCP auth failed
+```
+Error: Not connected to Notion
+```
+Run `ncli login` to authenticate via browser.
 
-4. **Adding pages to a DB requires `collection://` prefixed data_source_id as `--parent`**
-   - Example: `--parent collection://<ds-id>`
+### REST API: No token
+```
+Error: No REST API token configured
+  Hint: Set NOTION_API_KEY env var, or run "ncli rest login"
+```
+Run `ncli rest login` or set `NOTION_API_KEY`.
 
-5. **`--data` overrides all flags with direct JSON** — use for complex operations
+### REST API: Empty search results
+```
+Note: No results found. If you expected results, ensure your integration has access to pages.
+```
+Go to https://www.notion.so/profile/integrations/internal → select integration → Content access → add pages.
 
-6. **Follow error Hints** — the CLI returns structured errors (What + Why + Hint) where Hint guides the next action
+### REST API: 404 on page access
+```
+Error: REST API resource not found
+  Hint: The integration may not have access to this page.
+```
+The integration needs explicit access to the page. Add it via integration settings, or use MCP commands which have workspace-wide OAuth access.
 
-7. **`ncli api <tool> '{json}'` calls any MCP tool directly** — escape hatch for operations not covered by CLI commands
+### File upload: attach fails
+If `ncli file upload` succeeds but `ncli rest PATCH` to attach fails with 404, the integration doesn't have access to the target page. Add access via integration settings.

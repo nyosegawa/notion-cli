@@ -22,10 +22,15 @@ src/
 │   ├── comment.ts            # comment {create,list} ✅
 │   ├── user.ts               # user list + team list ✅
 │   ├── meeting-notes.ts      # meeting-notes query ✅
-│   └── api.ts                # ncli api <tool> [json] (escape hatch) ✅
+│   ├── api.ts                # ncli api <tool> [json] (escape hatch) ✅
+│   ├── rest.ts               # ncli rest <METHOD> <path> + login/logout ✅
+│   ├── file.ts               # ncli file upload ✅
 ├── mcp/
 │   ├── client.ts             # MCPConnection: connect, callTool, listTools, disconnect + MCP エラー→CliError 変換 ✅
 │   └── with-connection.ts    # withConnection ヘルパー (connect/callTool/disconnect + retry) ✅
+├── rest/
+│   ├── client.ts             # NotionRestClient: REST API リクエスト、ファイルアップロード ✅
+│   └── with-rest-client.ts   # withRestClient ヘルパー (トークン解決 + retry) ✅
 ├── auth/
 │   ├── provider.ts           # OAuthClientProvider 実装 ✅
 │   ├── token-store.ts        # ファイルベーストークン永続化 ✅
@@ -50,6 +55,7 @@ src/
 | `commander` | CLI フレームワーク | ~180 KB |
 | `open` | ブラウザで OAuth URL を開く | ~50 KB |
 | `env-paths` | OS 適切な設定パス | ~5 KB |
+| native `fetch` | REST API HTTP クライアント (Node 18+) | 0 KB (built-in) |
 
 Dev: `typescript`, `@types/node`, `tsup`, `vitest`, `@biomejs/biome`, `lefthook`
 
@@ -60,6 +66,11 @@ Dev: `typescript`, `@types/node`, `tsup`, `vitest`, `@biomejs/biome`, `lefthook`
 - CLI は単一プロセスなのでデーモン不要
 - ~500ms のオーバーヘッドは CLI 利用に許容範囲
 - セッション管理の複雑さを回避
+
+## REST API 接続
+
+**ステートレスリクエスト**: REST API コマンドは native fetch で直接 `https://api.notion.com/v1` にリクエスト。
+MCP と異なり接続管理不要。Integration Token (Bearer) で認証。
 
 ## パッケージ情報
 

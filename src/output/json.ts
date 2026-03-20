@@ -37,3 +37,30 @@ export function formatOutput(result: Record<string, unknown>, opts: OutputOption
 export function printOutput(result: Record<string, unknown>, opts: OutputOptions): void {
 	console.log(formatOutput(result, opts));
 }
+
+export function formatRestOutput(result: Record<string, unknown>, opts: OutputOptions): string {
+	if (opts.json) {
+		return JSON.stringify(result, null, 2);
+	}
+	if (opts.raw) {
+		return JSON.stringify(result);
+	}
+	return JSON.stringify(result, null, 2);
+}
+
+function isEmptyListResponse(result: Record<string, unknown>): boolean {
+	return (
+		result.object === "list" &&
+		Array.isArray(result.results) &&
+		(result.results as unknown[]).length === 0
+	);
+}
+
+export function printRestOutput(result: Record<string, unknown>, opts: OutputOptions): void {
+	console.log(formatRestOutput(result, opts));
+	if (isEmptyListResponse(result)) {
+		console.error(
+			"\nNote: No results found. If you expected results, ensure your integration has access to pages.\n  Go to https://www.notion.so/profile/integrations/internal → select your integration → Content access tab → edit access to add pages.",
+		);
+	}
+}

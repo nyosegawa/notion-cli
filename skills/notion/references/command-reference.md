@@ -219,6 +219,76 @@ echo '{"query":"test"}' | ncli api notion-search
 
 Use for MCP tools not covered by CLI commands or when complex arguments are needed.
 
+## rest (REST API escape hatch)
+
+Requires integration token: `ncli rest login` or `NOTION_API_KEY` env var.
+
+```bash
+# Authentication
+ncli rest login                    # Save integration token interactively
+echo "ntn_..." | ncli rest login   # Pipe token from stdin
+ncli rest logout                   # Remove saved token
+```
+
+```bash
+# API calls
+ncli rest GET /users/me
+ncli rest GET /pages/<page-id>
+ncli rest POST /search '{"query":"test"}'
+ncli rest PATCH /databases/<db-id> '{"title":[{"text":{"content":"New Title"}}]}'
+ncli rest DELETE /blocks/<block-id>
+echo '{"query":"test"}' | ncli rest POST /search
+```
+
+**Output example:**
+```json
+{
+  "object": "user",
+  "id": "abc123-...",
+  "type": "person",
+  "name": "Alice",
+  "avatar_url": "https://..."
+}
+```
+
+## file upload
+
+Requires REST API authentication. Uploads file only — attach to page separately.
+
+```bash
+ncli file upload <file-path> [--name <display-name>]
+```
+
+**Arguments:**
+- `<file-path>` — Local file path to upload
+- `--name` — Optional display name for the file in Notion
+
+**Examples:**
+```bash
+ncli file upload ./screenshot.png
+ncli file upload ./report.pdf --name "Q1 Report"
+```
+
+**Output:** Returns file_upload_id + copy-pastable attach command.
+
+**Full workflow:**
+```bash
+# 1. Upload
+ncli file upload ./image.png
+# → file_upload_id: "abc123..."
+
+# 2. Find target block (optional, for specific position)
+ncli fetch <page-id> --json
+# Or: ncli rest GET /blocks/<page-id>/children
+
+# 3a. Append to end of page
+ncli rest PATCH /blocks/<page-id>/children '{"children":[{"type":"file","file":{"type":"file_upload","file_upload":{"id":"abc123..."},"name":"image.png"}}]}'
+
+# 3b. Insert after specific block
+ncli rest PATCH /blocks/<page-id>/children '{"position":{"type":"after_block","after_block":{"id":"<block-id>"}},"children":[{"type":"file","file":{"type":"file_upload","file_upload":{"id":"abc123..."},"name":"image.png"}}]}'
+```
+```
+
 ## Error Patterns and Recovery
 
 | Error Situation | Hint |
@@ -230,3 +300,6 @@ Use for MCP tools not covered by CLI commands or when complex arguments are need
 | Tool not found | Check `ncli --help` for available commands |
 | JSON parse error | Verify `--data '{"key": "value"}'` syntax |
 | --prop and --body used together | Split into separate commands |
+| REST API auth failed | Set `NOTION_API_KEY` env var or run `ncli rest login` |
+| REST API access denied | Check integration connection at notion.so/profile/integrations |
+| File not found | Check the local file path |

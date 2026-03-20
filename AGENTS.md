@@ -1,6 +1,6 @@
 # ncli
 
-Remote Notion MCP (`https://mcp.notion.com/mcp`) の CLI ラッパー。
+Notion MCP + REST API 対応の CLI。MCP は OAuth、REST API は Integration Token で認証。
 
 ## Commands
 
@@ -14,6 +14,7 @@ npm run build && npm run typecheck && npm run lint && npm test
 - `docs/agent-first-design.md` — Agent-first CLI 設計思想 (出力・ディスカバリ・エラーの設計原則)
 - `research/` — 調査結果 (事実のみ)
 - `skills/` — Agent Skills (`skills/notion/` — ncli 活用スキル)
+- `src/rest/` — REST API クライアント (client, with-rest-client)
 - `PHASE.md` — フェーズ計画 (チェックボックスで進捗追跡)
 
 ## Phase Workflow
@@ -43,6 +44,7 @@ npm run build && npm run typecheck && npm run lint && npm test
 - `--data` の JSON パースエラーは `parseJsonData()` ヘルパー経由で CliError に統一
 - MCP ツール引数名は公式ドキュメントではなく `research/01-notion-remote-mcp-tools.md` の inputSchema が正
 - MCP ツール名を CLI のインターフェースとして露出しない（`ncli api` の escape hatch のみ）
+- REST API エラーも `CliError` に変換 (`restErrorToCliError()`)。REST コマンドの出力は `printRestOutput()` を使用
 - 設計原則の詳細は `docs/agent-first-design.md` を参照
 
 ## Testing

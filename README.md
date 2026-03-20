@@ -8,13 +8,16 @@
 
 **[日本語](./README.ja.md)**
 
-CLI wrapper for [Remote Notion MCP](https://mcp.notion.com/mcp) — read and write Notion from the terminal.
+CLI for Notion — MCP + REST API support. Read and write Notion from the terminal.
 
 Designed for both humans and coding agents (Claude Code, Codex, etc.). All output is structured JSON with recovery hints on errors.
 
 ## Features
 
 - Full Notion workspace access: search, pages, databases, views, comments, users, teams, meeting notes
+- REST API direct access: `ncli rest` for arbitrary Notion API calls
+- File upload: `ncli file upload` for attaching files to pages
+- Dual auth: OAuth (MCP commands) + integration token (`NOTION_API_KEY` env var or `ncli rest login`)
 - OAuth 2.0 + PKCE authentication (browser-based, zero-config)
 - Agent-first design: `--json` output, structured error hints (What + Why + Hint)
 - Escape hatch: `ncli api <tool> [json]` for direct MCP tool access
@@ -47,6 +50,20 @@ ncli page create --parent collection://<ds-id> \
   --title "Task 1" --prop "Status=Open"
 ```
 
+### REST API
+
+```bash
+# REST API setup (integration token)
+ncli rest login
+
+# Call REST API directly
+ncli rest GET /users/me
+ncli rest GET /pages/<page-id>
+
+# Upload a file
+ncli file upload ./image.png
+```
+
 ## Commands
 
 | Command | Description |
@@ -70,6 +87,10 @@ ncli page create --parent collection://<ds-id> \
 | `ncli user list` | List and search workspace users |
 | `ncli team list` | List and search workspace teams |
 | `ncli meeting-notes query` | Query meeting notes with filters |
+| `ncli rest login` | Save REST API integration token |
+| `ncli rest logout` | Remove saved REST API token |
+| `ncli rest <METHOD> <path> [json]` | Call any Notion REST API endpoint directly |
+| `ncli file upload <file-path>` | Upload a file (returns file_upload_id for attaching to pages) |
 | `ncli api <tool> [json]` | Call any MCP tool directly (escape hatch) |
 
 Run `ncli <command> --help` for detailed usage, examples, and tips.
@@ -146,6 +167,7 @@ echo '{"query":"test"}' | ncli api notion-search
 
 - Node.js >= 18
 - A Notion account (OAuth authentication via browser)
+- Notion integration token (for REST API commands — get at https://www.notion.so/profile/integrations)
 
 ## Legal
 

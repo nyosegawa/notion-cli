@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { CliError, formatError, isRateLimitError, withRetry } from "./errors.js";
+import {
+	CliError,
+	formatError,
+	isRateLimitError,
+	restErrorToCliError,
+	withRetry,
+} from "./errors.js";
 
 describe("CliError", () => {
 	it("stores what, why, hint fields", () => {
@@ -91,5 +97,59 @@ describe("withRetry", () => {
 		const fn = vi.fn().mockRejectedValue(new Error("not found"));
 		await expect(withRetry(fn, { maxRetries: 3, baseDelayMs: 0 })).rejects.toThrow("not found");
 		expect(fn).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe("restErrorToCliError", () => {
+	const makeApiError = (status: number, code: string, message: string) => ({
+		object: "error" as const,
+		status,
+		code,
+		message,
+	});
+
+	it("maps 401 to auth hint", () => {
+		const err = restErrorToCliError(401, makeApiError(401, "unauthorized", "API token is invalid"));
+		expect(err.what).toBe("REST API authentication failed");
+		expect(err.hint).toContain("NOTION_API_KEY");
+	});
+
+	it("maps 403 to access denied hint", () => {
+		const err = restErrorToCliError(403, makeApiError(403, "restricted_resource", "Not allowed"));
+		expect(err.what).toBe("REST API access denied");
+		expect(err.hint).toContain("integration");
+	});
+
+	it("maps 404 to not found hint", () => {
+		const err = restErrorToCliError(
+			404,
+			makeApiError(404, "object_not_found", "Could not find page"),
+		);
+		expect(err.what).toBe("REST API resource not found");
+		expect(err.hint).toContain("integration may not have access");
+	});
+
+	it("maps 429 to rate limit hint", () => {
+		const err = restErrorToCliError(429, makeApiError(429, "rate_limited", "Rate limited"));
+		expect(err.what).toBe("REST API rate limited");
+		expect(err.hint).toContain("retry");
+	});
+
+	it("maps validation_error code", () => {
+		const err = restErrorToCliError(
+			400,
+			makeApiError(400, "validation_error", "Title is required"),
+		);
+		expect(err.what).toBe("REST API validation error");
+		expect(err.hint).toContain("required fields");
+	});
+
+	it("maps unknown errors with status", () => {
+		const err = restErrorToCliError(
+			500,
+			makeApiError(500, "internal_server_error", "Server error"),
+		);
+		expect(err.what).toBe("REST API error (500)");
+		expect(err.hint).toBeUndefined();
 	});
 });

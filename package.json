@@ -1,7 +1,7 @@
 {
 	"name": "@sakasegawa/ncli",
 	"version": "0.2.0",
-	"description": "CLI wrapper for Notion's Remote MCP server",
+	"description": "CLI for Notion — MCP + REST API support",
 	"type": "module",
 	"bin": {
 		"ncli": "dist/index.js"

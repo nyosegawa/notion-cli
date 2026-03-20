@@ -16,6 +16,8 @@
 | バイナリ名 | `ncli` | シンプルで覚えやすい |
 | Node.js | >= 18 | native fetch, crypto.subtle, ESM |
 | Module | ESM | MCP SDK が ESM。CJS は非推奨方向 |
+| REST API 並行対応 | MCP + REST デュアル | MCP にないファイルアップロード・ブロック操作を補完。既存 MCP コマンドはそのまま |
+| 認証デュアルモデル | env var + ファイル保存 | `NOTION_API_KEY` で CI/CD 対応、`ncli rest login` で対話利用 |
 
 ## トレードオフ
 
@@ -38,6 +40,12 @@ CLI の 500ms オーバーヘッドはユーザー体感で問題にならない
 
 キーチェーンは安全だが macOS/Linux/Windows で API が異なり、ネイティブモジュールが必要。
 ファイルベース + `0o600` パーミッションは gh CLI のフォールバックと同じアプローチ。
+
+### MCP only vs MCP + REST
+
+MCP のみなら認証が統一されシンプルだが、ファイルアップロードやブロック直接操作に対応できない。
+REST API を追加することで Notion の全機能にアクセス可能になるが、認証が二系統になる。
+`ncli rest` escape hatch で REST API の全エンドポイントをカバーし、特に需要の高いファイルアップロードは `ncli file upload` で専用コマンド化。
 
 ## 出力設計: Agent-first
 

@@ -14,12 +14,13 @@ ncli stores the following data **locally on your machine only**:
 | `refresh_token` | Obtain a new access token when the current one expires |
 | `client_id` | Identify the OAuth application |
 | `code_verifier` | Complete the OAuth 2.0 PKCE flow |
+| `integration_token` | Authenticate REST API requests to Notion |
 
 No other data is collected, generated, or stored by ncli.
 
 ## Storage Location
 
-Tokens are written to a file with permissions `0o600` (owner read/write only) in the OS-appropriate config directory:
+Tokens are written to files with permissions `0o600` (owner read/write only) in the OS-appropriate config directory. OAuth tokens are stored in the default config file, and the REST API integration token is stored in `rest-token.json`.
 
 | OS | Path |
 |----|------|
@@ -36,24 +37,26 @@ Tokens are written to a file with permissions `0o600` (owner read/write only) in
 
 ## Data Flow
 
-All network communication occurs directly between your machine and Notion's official MCP endpoint:
+All network communication occurs directly between your machine and Notion's official endpoints:
 
 ```
-your machine  <──────>  https://mcp.notion.com/mcp
+your machine  <──────>  https://mcp.notion.com/mcp      (MCP commands)
+your machine  <──────>  https://api.notion.com/v1        (REST API commands)
 ```
 
 There is no intermediary server. ncli does not proxy, intercept, or log any request or response data.
 
 ## Third Parties
 
-ncli does not send data to any third party. The only external service ncli communicates with is Notion's MCP endpoint at `https://mcp.notion.com/mcp`.
+ncli does not send data to any third party. The only external services ncli communicates with are Notion's MCP endpoint at `https://mcp.notion.com/mcp` and Notion's REST API at `https://api.notion.com/v1`.
 
 ## How to Delete Your Data
 
-Run the following command to remove all locally stored tokens:
+Run the following commands to remove all locally stored tokens:
 
 ```
-ncli logout
+ncli logout          # Remove OAuth tokens (MCP)
+ncli rest logout     # Remove REST API integration token
 ```
 
 You may also delete the config directory manually at the paths listed above.

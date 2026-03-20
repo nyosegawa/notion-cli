@@ -41,6 +41,53 @@ export function parseJsonData(json: string): Record<string, unknown> {
 	}
 }
 
+export interface RestApiError {
+	object: string;
+	status: number;
+	code: string;
+	message: string;
+}
+
+export function restErrorToCliError(status: number, apiError: RestApiError): CliError {
+	const message = apiError.message || "Unknown REST API error";
+	if (status === 401) {
+		return new CliError(
+			"REST API authentication failed",
+			message,
+			'Check your integration token. Set NOTION_API_KEY env var, or run "ncli rest login"',
+		);
+	}
+	if (status === 403) {
+		return new CliError(
+			"REST API access denied",
+			message,
+			"The integration may not have access to this resource. Check connection settings at notion.so/profile/integrations",
+		);
+	}
+	if (status === 404) {
+		return new CliError(
+			"REST API resource not found",
+			message,
+			"The integration may not have access to this page. Go to https://www.notion.so/profile/integrations/internal → select your integration → Content access tab → edit access to add pages.",
+		);
+	}
+	if (status === 429) {
+		return new CliError(
+			"REST API rate limited",
+			message,
+			"Wait a moment and retry. The CLI retries automatically up to 3 times",
+		);
+	}
+	if (apiError.code === "validation_error") {
+		return new CliError(
+			"REST API validation error",
+			message,
+			'Check required fields. Run "ncli rest --help" for usage',
+		);
+	}
+	return new CliError(`REST API error (${status})`, message);
+}
+
 export interface RetryOptions {
 	maxRetries?: number;
 	baseDelayMs?: number;
