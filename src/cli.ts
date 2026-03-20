@@ -1,8 +1,7 @@
-import { createRequire } from "node:module";
 import { Command } from "commander";
 
-const require = createRequire(import.meta.url);
-const { version } = require("../package.json") as { version: string };
+declare const __NCLI_VERSION__: string;
+const version = typeof __NCLI_VERSION__ !== "undefined" ? __NCLI_VERSION__ : "0.0.0-dev";
 
 import { registerApiCommand } from "./commands/api.js";
 import { registerCommentCommands } from "./commands/comment.js";

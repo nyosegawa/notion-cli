@@ -7,7 +7,7 @@
 		"ncli": "dist/index.js"
 	},
 	"scripts": {
-		"build": "tsup src/index.ts --format esm --dts --clean",
+		"build": "tsup",
 		"dev": "tsup src/index.ts --format esm --watch",
 		"test": "vitest run",
 		"test:watch": "vitest",

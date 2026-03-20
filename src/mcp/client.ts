@@ -1,4 +1,3 @@
-import { createRequire } from "node:module";
 import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
@@ -9,8 +8,8 @@ import { TokenStore } from "../auth/token-store.js";
 import { CONFIG_DIR, MCP_SERVER_URL } from "../util/config.js";
 import { CliError } from "../util/errors.js";
 
-const require = createRequire(import.meta.url);
-const { version } = require("../../package.json") as { version: string };
+declare const __NCLI_VERSION__: string;
+const version = typeof __NCLI_VERSION__ !== "undefined" ? __NCLI_VERSION__ : "0.0.0-dev";
 
 export class MCPConnection {
 	private client: Client | null = null;
