@@ -1,0 +1,44 @@
+name: Create Release PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-release-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Bump version
+        id: version
+        run: |
+          npm version "${{ github.event.inputs.version_type }}" --no-git-tag-version
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Create release PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: release/v${{ steps.version.outputs.version }}
+          title: 'chore: release v${{ steps.version.outputs.version }}'
+          commit-message: 'chore: release v${{ steps.version.outputs.version }}'
+          body: |
+            Release v${{ steps.version.outputs.version }}.
+
+            Merge this PR to publish the package with npm trusted publishing.

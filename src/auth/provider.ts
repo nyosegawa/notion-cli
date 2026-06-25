@@ -10,11 +10,23 @@ import { CliError } from "../util/errors.js";
 import type { CallbackServer } from "./callback-server.js";
 import type { TokenStore } from "./token-store.js";
 
+export interface NotionOAuthProviderOptions {
+	preferredPort?: number;
+}
+
 export class NotionOAuthProvider implements OAuthClientProvider {
+	private callbackStartPromise: Promise<void> | null = null;
+	private callbackPromise: Promise<string> | null = null;
+	private refreshFailed = false;
+	private readonly preferredPort?: number;
+
 	constructor(
 		private tokenStore: TokenStore,
 		private callbackServer: CallbackServer,
-	) {}
+		options: NotionOAuthProviderOptions = {},
+	) {
+		this.preferredPort = options.preferredPort;
+	}
 
 	get redirectUrl(): string {
 		return `http://127.0.0.1:${this.callbackServer.port}${CALLBACK_PATH}`;
@@ -30,8 +42,29 @@ export class NotionOAuthProvider implements OAuthClientProvider {
 		};
 	}
 
-	clientInformation(): OAuthClientInformationFull | undefined {
-		return this.tokenStore.readClientInfo() as OAuthClientInformationFull | undefined;
+	async clientInformation(): Promise<OAuthClientInformationFull | undefined> {
+		const clientInfo = this.tokenStore.readClientInfo() as OAuthClientInformationFull | undefined;
+
+		if (!clientInfo) {
+			// First-time auth: start server for registration
+			await this.ensureCallbackServerStarted();
+			return undefined;
+		}
+
+		if (!this.refreshFailed) {
+			// First call: let the SDK try refresh with the saved client info.
+			// No server needed yet — refresh doesn't use redirect_uri.
+			return clientInfo;
+		}
+
+		// Refresh failed: start the server for browser authorization.
+		await this.ensureCallbackServerStarted();
+		if (this.preferredPort !== undefined && this.callbackServer.port !== this.preferredPort) {
+			// Port changed — saved redirect_uri is stale, force re-registration
+			this.tokenStore.deleteClientInfo();
+			return undefined;
+		}
+		return clientInfo;
 	}
 
 	async saveClientInformation(info: OAuthClientInformationFull): Promise<void> {
@@ -63,6 +96,61 @@ export class NotionOAuthProvider implements OAuthClientProvider {
 	}
 
 	async redirectToAuthorization(url: URL): Promise<void> {
+		await this.ensureCallbackServerStarted();
+		this.beginCallbackWait();
 		await openBrowser(url.toString());
+	}
+
+	async waitForCallback(): Promise<string> {
+		if (!this.callbackPromise) {
+			throw new CliError(
+				"OAuth callback not started",
+				"The authorization flow did not start before waiting for the callback",
+				"Run ncli login to retry",
+			);
+		}
+		return this.callbackPromise;
+	}
+
+	async invalidateCredentials(
+		scope: "all" | "client" | "tokens" | "verifier" | "discovery",
+	): Promise<void> {
+		switch (scope) {
+			case "all":
+				this.tokenStore.deleteOAuthState();
+				this.refreshFailed = false;
+				break;
+			case "client":
+				this.tokenStore.deleteClientInfo();
+				break;
+			case "tokens":
+				this.tokenStore.deleteTokens();
+				this.refreshFailed = true;
+				break;
+			case "verifier":
+				this.tokenStore.deleteCodeVerifier();
+				break;
+			case "discovery":
+				break;
+		}
+	}
+
+	private async ensureCallbackServerStarted(): Promise<void> {
+		if (this.callbackServer.port > 0) return;
+		this.callbackStartPromise ??= this.callbackServer.start(this.preferredPort);
+		await this.callbackStartPromise;
+	}
+
+	private beginCallbackWait(): Promise<string> {
+		if (this.callbackPromise) return this.callbackPromise;
+
+		const callbackPromise = this.callbackServer.waitForCallback().catch((error: unknown) => {
+			if (this.callbackPromise === callbackPromise) {
+				this.callbackPromise = null;
+			}
+			throw error;
+		});
+		this.callbackPromise = callbackPromise;
+		return callbackPromise;
 	}
 }

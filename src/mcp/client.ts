@@ -20,19 +20,12 @@ export class MCPConnection {
 		const callbackServer = new CallbackServer();
 		this.callbackServer = callbackServer;
 
-		// Reuse the port from the previous client registration to avoid redirect_uri mismatch
+		// Derive the port from the previous client registration so the provider
+		// can reuse it when the SDK needs browser authorization.
 		const savedPort = extractPortFromClientInfo(tokenStore.readClientInfo());
-		await callbackServer.start(savedPort);
-
-		// If the actual port differs from the saved one, the cached redirect_uri is
-		// stale — clear client registration so the SDK re-registers with the new port.
-		if (savedPort !== undefined && callbackServer.port !== savedPort) {
-			tokenStore.deleteClientInfo();
-		}
-
-		const callbackPromise = callbackServer.waitForCallback();
-
-		const provider = new NotionOAuthProvider(tokenStore, callbackServer);
+		const provider = new NotionOAuthProvider(tokenStore, callbackServer, {
+			preferredPort: savedPort,
+		});
 		const serverUrl = new URL(MCP_SERVER_URL);
 
 		const client = new Client({ name: "ncli", version }, { capabilities: {} });
@@ -48,7 +41,7 @@ export class MCPConnection {
 			if (error instanceof UnauthorizedError) {
 				console.error("Opening browser for Notion login...");
 
-				const code = await callbackPromise;
+				const code = await provider.waitForCallback();
 				await transport.finishAuth(code);
 
 				// Reconnect with new tokens

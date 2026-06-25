@@ -121,6 +121,29 @@ describe("TokenStore", () => {
 		});
 	});
 
+	describe("deleteOAuthState", () => {
+		it("deletes MCP OAuth files without deleting REST token", () => {
+			store.saveTokens({ access_token: "abc", refresh_token: "def" });
+			store.saveClientInfo({ client_id: "id" });
+			store.saveCodeVerifier("verifier");
+			store.saveRestToken("ntn_abc123");
+
+			store.deleteOAuthState();
+
+			expect(store.readTokens()).toBeUndefined();
+			expect(store.readClientInfo()).toBeUndefined();
+			expect(store.readCodeVerifier()).toBeUndefined();
+			expect(store.readRestToken()).toBe("ntn_abc123");
+		});
+
+		it("is a no-op when OAuth files are already missing", () => {
+			store.saveRestToken("ntn_abc123");
+
+			expect(() => store.deleteOAuthState()).not.toThrow();
+			expect(store.readRestToken()).toBe("ntn_abc123");
+		});
+	});
+
 	describe("directory creation", () => {
 		it("creates nested directories when they dont exist", () => {
 			const nestedDir = path.join(tmpDir, "a", "b", "c");
