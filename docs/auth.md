@@ -17,7 +17,7 @@ MCPConnection.connect()
   ├── CallbackServer.start(savedPort) → ポート確定
   │   ├── savedPort あり → そのポートで listen (競合時は listen(0) にフォールバック)
   │   └── savedPort なし → listen(0) でランダムポート
-  ├── ポート不一致 → client.json 破棄 (再登録)
+  ├── ポート不一致 → provider に redirectPortStale を渡す (client.json はまだ保持)
   ├── StreamableHTTPClientTransport + OAuthClientProvider 作成
   ├── client.connect(transport) → POST to https://mcp.notion.com/mcp
   │
@@ -89,7 +89,7 @@ SDK の `OAuthClientProvider` インターフェースを実装する。主要�
 | `clientMetadata` | `{ client_name: "ncli", grant_types: [...], token_endpoint_auth_method: "none" }` |
 | `tokens()` / `saveTokens()` | TokenStore 経由で tokens.json を読み書き |
 | `clientInformation()` / `saveClientInformation()` | TokenStore 経由で client.json を読み書き |
-| `redirectToAuthorization(url)` | `open(url)` (CallbackServer は事前に起動済み) |
+| `redirectToAuthorization(url)` | `open(url)` (CallbackServer は事前に起動済み)。`redirectPortStale` のときは `client.json` / `tokens.json` を破棄して `StaleRedirectPortError` |
 | `codeVerifier()` / `saveCodeVerifier()` | TokenStore 経由で auth-state.json を読み書き |
 | `invalidateCredentials()` | 未実装 (SDK が呼ぶが no-op。logout は TokenStore.deleteAll() で処理) |
 
@@ -101,8 +101,11 @@ Dynamic Client Registration で登録される `redirect_uris` にはコール�
 
 **対策**: `connect()` が `client.json` の `redirect_uris` からポートを導出し、同じポートで `CallbackServer.start()` を呼ぶ。追加のファイルは不要。
 
-- ポート競合時は `listen(0)` にフォールバックし、`client.json` を破棄して再登録
-- `redirect_uris` がない（旧バージョンの `client.json`）場合はランダムポートで起動し、ポート不一致で自動再登録
+- ポート競合時は `listen(0)` にフォールバックする。保存済みポートは一時ポート帯 (macOS では 49152–65535) に入るため、他プロセスの外向き接続がたまたま同じポートを使っているだけでも競合は起きる
+- 競合しても `client.json` は**すぐには破棄しない**。キャッシュ済みの登録はトークン更新 (refresh_token grant) にはそのまま使えるので、アクセストークンの更新だけで済む実行は影響を受けない
+- ブラウザ認可が実際に必要になった時点 (`redirectToAuthorization()`) で初めて `client.json` と `tokens.json` を破棄し、`StaleRedirectPortError` を投げる。`connect()` はこれを受けて接続をやり直し、SDK が実ポートで再登録 → ログインフローに入る
+- `tokens.json` も一緒に破棄するのは、refresh_token が旧 `client_id` に紐づいているため。新しい `client_id` でその refresh_token を使うと OAuth サーバーが `Client ID mismatch` を返し、以後ブラウザで再ログインするまで毎回失敗する (競合時に `client.json` だけ破棄していた旧実装で、非対話のバッチ実行がこの状態に陥った)
+- `redirect_uris` がない（旧バージョンの `client.json`）場合はランダムポートで起動し、ブラウザ認可が必要になった時点で同じ経路で再登録
 
 ## REST API 認証
 

@@ -3,7 +3,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { CallbackServer } from "../auth/callback-server.js";
-import { NotionOAuthProvider } from "../auth/provider.js";
+import { NotionOAuthProvider, StaleRedirectPortError } from "../auth/provider.js";
 import { TokenStore } from "../auth/token-store.js";
 import { CONFIG_DIR, MCP_SERVER_URL } from "../util/config.js";
 import { CliError } from "../util/errors.js";
@@ -24,26 +24,39 @@ export class MCPConnection {
 		const savedPort = extractPortFromClientInfo(tokenStore.readClientInfo());
 		await callbackServer.start(savedPort);
 
-		// If the actual port differs from the saved one, the cached redirect_uri is
-		// stale — clear client registration so the SDK re-registers with the new port.
-		if (savedPort !== undefined && callbackServer.port !== savedPort) {
-			tokenStore.deleteClientInfo();
-		}
+		// The saved port may be taken (another ncli process, or any process that happened
+		// to pick it as an ephemeral port). The cached registration is still valid for
+		// token refresh, so keep it: discarding it here would make the SDK register a new
+		// client_id while tokens.json still holds a refresh token bound to the old one,
+		// and every later refresh would fail with "Client ID mismatch". The provider only
+		// discards the registration if a browser login turns out to be necessary.
+		const redirectPortStale = savedPort !== undefined && callbackServer.port !== savedPort;
 
 		const callbackPromise = callbackServer.waitForCallback();
-
-		const provider = new NotionOAuthProvider(tokenStore, callbackServer);
 		const serverUrl = new URL(MCP_SERVER_URL);
 
 		const client = new Client({ name: "ncli", version }, { capabilities: {} });
 		this.client = client;
 
+		let provider = new NotionOAuthProvider(tokenStore, callbackServer, { redirectPortStale });
 		let transport = new StreamableHTTPClientTransport(serverUrl, {
 			authProvider: provider,
 		});
 
 		try {
-			await client.connect(transport);
+			try {
+				await client.connect(transport);
+			} catch (error) {
+				if (!(error instanceof StaleRedirectPortError)) throw error;
+
+				// The stale registration and its tokens are gone; connect again so the SDK
+				// registers a client with the live port and starts the login flow.
+				provider = new NotionOAuthProvider(tokenStore, callbackServer);
+				transport = new StreamableHTTPClientTransport(serverUrl, {
+					authProvider: provider,
+				});
+				await client.connect(transport);
+			}
 		} catch (error) {
 			if (error instanceof UnauthorizedError) {
 				console.error("Opening browser for Notion login...");

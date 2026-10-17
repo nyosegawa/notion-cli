@@ -10,11 +10,42 @@ import { CliError } from "../util/errors.js";
 import type { CallbackServer } from "./callback-server.js";
 import type { TokenStore } from "./token-store.js";
 
+export interface NotionOAuthProviderOptions {
+	/**
+	 * True when the callback server could not bind the port recorded in the cached
+	 * client registration (`client.json`) and fell back to another port.
+	 *
+	 * The cached registration is still valid for token refresh — only the
+	 * authorization-code flow needs a redirect_uri that matches the live port — so
+	 * the registration must not be discarded until a browser login is actually
+	 * required. See {@link NotionOAuthProvider.redirectToAuthorization}.
+	 */
+	redirectPortStale?: boolean;
+}
+
+/**
+ * Thrown by `redirectToAuthorization()` when the cached client registration points
+ * at a redirect port that is not live. The stale registration and its tokens have
+ * been removed; the caller should retry the connection so the SDK registers a new
+ * client with the live port and starts the login flow.
+ */
+export class StaleRedirectPortError extends Error {
+	constructor() {
+		super("Cached OAuth client registration points at an unavailable callback port");
+		this.name = "StaleRedirectPortError";
+	}
+}
+
 export class NotionOAuthProvider implements OAuthClientProvider {
+	private readonly redirectPortStale: boolean;
+
 	constructor(
 		private tokenStore: TokenStore,
 		private callbackServer: CallbackServer,
-	) {}
+		options: NotionOAuthProviderOptions = {},
+	) {
+		this.redirectPortStale = options.redirectPortStale ?? false;
+	}
 
 	get redirectUrl(): string {
 		return `http://127.0.0.1:${this.callbackServer.port}${CALLBACK_PATH}`;
@@ -63,6 +94,16 @@ export class NotionOAuthProvider implements OAuthClientProvider {
 	}
 
 	async redirectToAuthorization(url: URL): Promise<void> {
+		if (this.redirectPortStale) {
+			// Reaching this point means a browser login is unavoidable (no tokens, or the
+			// refresh was rejected). The registration's redirect_uri cannot receive the
+			// callback, and the tokens are bound to that client_id — a freshly registered
+			// client would be refused with "Client ID mismatch" — so drop both and let the
+			// caller start over with a registration that uses the live port.
+			this.tokenStore.deleteClientInfo();
+			this.tokenStore.deleteTokens();
+			throw new StaleRedirectPortError();
+		}
 		await openBrowser(url.toString());
 	}
 }
